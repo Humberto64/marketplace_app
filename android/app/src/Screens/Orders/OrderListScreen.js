@@ -1,0 +1,193 @@
+// android/app/src/Screens/Orders/OrderListScreen.js
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    FlatList,
+    ActivityIndicator,
+    Button,
+    TouchableOpacity,
+    Alert,
+    RefreshControl,
+} from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+
+import {
+    getOrders,
+    deleteOrder,
+} from '../../api/ordersApi';
+
+const OrderListScreen = ({ navigation }) => {
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const isFocused = useIsFocused();
+
+    const loadOrders = async () => {
+        try {
+            setLoading(true);
+            const data = await getOrders();
+            setOrders(data);
+        } catch (error) {
+            console.log('Error cargando orders:', error?.response?.data || error);
+            Alert.alert('Error', 'No se pudieron cargar las órdenes.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isFocused) loadOrders();
+    }, [isFocused]);
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await loadOrders();
+        setRefreshing(false);
+    }, []);
+
+    const goToCreate = () => {
+        navigation.navigate('OrderForm');
+    };
+
+    const goToEdit = (item) => {
+        navigation.navigate('OrderForm', { item });
+    };
+
+    const handleDelete = (item) => {
+        Alert.alert(
+            'Eliminar orden',
+            `¿Eliminar la orden #${item.id}?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Eliminar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteOrder(item.id);
+                            await loadOrders();
+                        } catch (err) {
+                            console.log('Error al eliminar:', err?.response?.data || err);
+                            Alert.alert('Error', 'No se pudo eliminar la orden');
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
+    const renderItem = ({ item }) => (
+        <TouchableOpacity onPress={() => goToEdit(item)}>
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Text style={styles.orderId}>Order #{item.id}</Text>
+                    <Text style={styles.status}>{item.status}</Text>
+                </View>
+
+                <Text style={styles.line}>
+                    Total: <Text style={styles.bold}>{item.total}</Text>
+                </Text>
+
+                <Text style={styles.line}>
+                    User ID: <Text style={styles.bold}>{item.userId}</Text>
+                </Text>
+
+                <Text style={styles.date}>
+                    Fecha: {new Date(item.createdAt).toLocaleString()}
+                </Text>
+
+                <View style={styles.rowActions}>
+                    <Button title="Edit" onPress={() => goToEdit(item)} />
+                    <Button title="Delete" color="red" onPress={() => handleDelete(item)} />
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+
+    if (loading) {
+        return (
+            <View style={styles.center}>
+                <ActivityIndicator size="large" />
+                <Text>Cargando órdenes...</Text>
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.headerRow}>
+                <Text style={styles.title}>Orders</Text>
+                <Button title="Add order" onPress={goToCreate} />
+            </View>
+
+            <FlatList
+                data={orders}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderItem}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+                contentContainerStyle={
+                    orders.length === 0 && { flex: 1, justifyContent: 'center' }
+                }
+                ListEmptyComponent={
+                    <View style={styles.center}>
+                        <Text>No hay órdenes registradas.</Text>
+                    </View>
+                }
+            />
+        </View>
+    );
+};
+
+export default OrderListScreen;
+
+const styles = StyleSheet.create({
+    container: { flex: 1, padding: 16 },
+
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+    },
+
+    title: { fontSize: 22, fontWeight: 'bold' },
+
+    card: {
+        backgroundColor: '#fff',
+        padding: 14,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        marginBottom: 12,
+    },
+
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+
+    orderId: { fontSize: 16, fontWeight: '600' },
+    status: { fontSize: 14, color: '#0284c7', fontWeight: '600' },
+
+    line: { marginTop: 6, fontSize: 14 },
+    bold: { fontWeight: 'bold' },
+
+    date: { marginTop: 6, color: '#777', fontSize: 12 },
+
+    rowActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 12,
+    },
+
+    center: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
