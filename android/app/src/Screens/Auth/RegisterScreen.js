@@ -12,15 +12,27 @@ import {
 import { registerRequest } from '../../api/authApi';
 
 const RegisterScreen = ({ navigation }) => {
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirm, setConfirm] = useState('');
+    // 🔹 Un solo estado para todo el formulario
+    const [form, setForm] = useState({
+        email: '',
+        firstName: '',
+        lastName: '',
+        password: '',
+        confirm: '',
+    });
 
     const [loading, setLoading] = useState(false);
 
+    const updateField = (field, value) => {
+        setForm(prev => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
     const handleRegister = async () => {
+        const { email, firstName, lastName, password, confirm } = form;
+
         if (!firstName || !lastName || !email || !password || !confirm) {
             Alert.alert('Error', 'Por favor completa todos los campos');
             return;
@@ -34,27 +46,43 @@ const RegisterScreen = ({ navigation }) => {
         try {
             setLoading(true);
 
-            const body = { firstName, lastName, email, password };
-            await registerRequest(body); // tu backend devuelve AuthenticationResponse
+            const body = {
+                firstname: firstName.trim(),  // 👈 igual que el front web
+                lastname: lastName.trim(),   // 👈 igual que el front web
+                email: email.trim(),
+                password,
+            };
+
+            console.log('📦 Enviando al backend:', body);
+
+            await registerRequest(body);
 
             setLoading(false);
             Alert.alert('Éxito', 'Cuenta creada correctamente');
 
-            // Volver a login
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],
             });
         } catch (error) {
             setLoading(false);
-            console.log('Register error:', error?.response?.data || error.message);
-            Alert.alert('Error', 'No se pudo crear la cuenta');
+            console.log(
+                'Register error:',
+                JSON.stringify(error?.response?.data ?? error.message, null, 2)
+            );
+
+            const msg =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                'No se pudo crear la cuenta';
+
+            Alert.alert('Error', msg);
         }
     };
 
-    const goToLogin = () => {
-        navigation.navigate('Login');
-    };
+
+
+    const goToLogin = () => navigation.navigate('Login');
 
     return (
         <View style={styles.container}>
@@ -64,24 +92,24 @@ const RegisterScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Tu nombre"
-                value={firstName}
-                onChangeText={setFirstName}
+                value={form.firstName}
+                onChangeText={text => updateField('firstName', text)}
             />
 
             <Text style={styles.label}>Apellido</Text>
             <TextInput
                 style={styles.input}
                 placeholder="Tu apellido"
-                value={lastName}
-                onChangeText={setLastName}
+                value={form.lastName}
+                onChangeText={text => updateField('lastName', text)}
             />
 
             <Text style={styles.label}>Email</Text>
             <TextInput
                 style={styles.input}
                 placeholder="Ingresa tu email"
-                value={email}
-                onChangeText={setEmail}
+                value={form.email}
+                onChangeText={text => updateField('email', text)}
                 autoCapitalize="none"
                 keyboardType="email-address"
             />
@@ -90,8 +118,8 @@ const RegisterScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Ingresa tu contraseña"
-                value={password}
-                onChangeText={setPassword}
+                value={form.password}
+                onChangeText={text => updateField('password', text)}
                 secureTextEntry
             />
 
@@ -99,8 +127,8 @@ const RegisterScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Repite la contraseña"
-                value={confirm}
-                onChangeText={setConfirm}
+                value={form.confirm}
+                onChangeText={text => updateField('confirm', text)}
                 secureTextEntry
             />
 

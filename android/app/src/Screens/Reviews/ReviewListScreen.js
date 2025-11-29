@@ -151,7 +151,7 @@ const ReviewListScreen = ({ navigation }) => {
             {/* Header */}
             <View style={styles.headerRow}>
                 <Text style={styles.title}>Reviews</Text>
-                <Button title="Add review" onPress={goToCreate} />
+                <Button color='#1d4ed8' title="Add review" onPress={goToCreate} />
             </View>
 
             <FlatList

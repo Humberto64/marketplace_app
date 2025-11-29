@@ -4,9 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { refreshTokenRequest } from './authApi';
 import { resetToAuth } from '../navigation/navigationRef';
-
+export const baseURL = 'https://marketplace-bakend-production.up.railway.app/api';
 const apiClient = axios.create({
-    baseURL: 'http://10.0.2.2:8080/api',
+    baseURL,
     timeout: 10000,
 });
 

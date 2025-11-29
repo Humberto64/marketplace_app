@@ -8,9 +8,10 @@ import {
     Alert,
     ScrollView,
     ActivityIndicator,
+    TouchableOpacity,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-
+import { ArrowLeft } from 'lucide-react-native';
 import {
     createUser,
     updateUser,
@@ -92,10 +93,14 @@ const UserFormScreen = ({ navigation, route }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>
-                {isEdit ? 'Editar usuario' : 'Crear usuario'}
-            </Text>
-
+            <View style={styles.topRow}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <ArrowLeft size={22} color="#111827" />
+                </TouchableOpacity>
+                <Text style={styles.title}>
+                    {isEdit ? 'Editar usuario' : 'Crear usuario'}
+                </Text>
+            </View>
             <View style={styles.row}>
                 <View style={styles.half}>
                     <Text style={styles.label}>Nombre</Text>
@@ -179,6 +184,7 @@ const UserFormScreen = ({ navigation, route }) => {
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
             ) : (
                 <Button
+                    color='#1d4ed8'
                     title={isEdit ? 'Guardar cambios' : 'Crear usuario'}
                     onPress={handleSave}
                 />

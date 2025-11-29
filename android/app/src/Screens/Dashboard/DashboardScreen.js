@@ -16,7 +16,15 @@ import { getStores } from '../../api/storesApi';
 import { getOrders } from '../../api/ordersApi';
 import { getOrderItems } from '../../api/orderItemsApi';
 import { getReviews } from '../../api/reviewsApi';
-
+import {
+    Users as UsersIcon,
+    ClipboardList,
+    Store,
+    MessageCircle,
+    ShoppingBag,
+    Grid2X2,
+    Settings as SettingsIcon,
+} from 'lucide-react-native';
 const DashboardScreen = () => {
     const isFocused = useIsFocused();
 
@@ -143,33 +151,51 @@ const DashboardScreen = () => {
             {/* Cards de resumen (mismo contenido que el front web) */}
             <View style={styles.cardsRow}>
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Users</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.cardTitle}>Users</Text>
+                        <UsersIcon size={22} color="#1d4ed8" />
+                    </View>
                     <Text style={styles.cardValue}>{totals.users}</Text>
                 </View>
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Orders</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.cardTitle}>Orders</Text>
+                        <ClipboardList size={22} color="#f59e0b" />
+                    </View>
                     <Text style={styles.cardValue}>{totals.orders}</Text>
                 </View>
             </View>
 
             <View style={styles.cardsRow}>
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Stores</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.cardTitle}>Stores</Text>
+                        <Store size={22} color="#22c55e" />
+                    </View>
                     <Text style={styles.cardValue}>{totals.stores}</Text>
                 </View>
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Reviews</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.cardTitle}>Reviews</Text>
+                        <MessageCircle size={22} color="#1d4ed8" />
+                    </View>
                     <Text style={styles.cardValue}>{totals.reviews}</Text>
                 </View>
             </View>
 
             <View style={styles.cardsRow}>
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Products</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.cardTitle}>Products</Text>
+                        <ShoppingBag size={22} color="#ef4444" />
+                    </View>
                     <Text style={styles.cardValue}>{totals.products}</Text>
                 </View>
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>OrderItems</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.cardTitle}>OrderItems</Text>
+                        <Grid2X2 size={22} color="#a855f7" />
+                    </View>
                     <Text style={styles.cardValue}>{totals.orderItems}</Text>
                 </View>
             </View>

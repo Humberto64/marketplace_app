@@ -1,5 +1,6 @@
 // android/app/src/api/authApi.js
-import apiClient from './apiClient';
+import apiClient, { baseURL } from './apiClient';
+import axios from 'axios';
 
 // POST /api/auth/login
 export const loginRequest = ({ email, password }) => {
@@ -7,20 +8,14 @@ export const loginRequest = ({ email, password }) => {
 };
 
 // POST /api/auth/register
-export const registerRequest = ({ firstName, lastName, email, password }) => {
-    return apiClient.post('/auth/register', {
-        firstName,
-        lastName,
-        email,
-        password,
-    });
+// 👉 Acepta cualquier payload con las claves correctas
+export const registerRequest = (payload) => {
+    return apiClient.post('/auth/register', payload);
 };
 
 // GET /api/auth/me
-export const getMe = () => {
-    return apiClient.get('/auth/me');
-};
+export const getMe = () => apiClient.get('/auth/me');
 
 // POST /api/auth/refresh
 export const refreshTokenRequest = (refreshToken) =>
-    axios.post(`${BASE_URL}/auth/refresh/token`, { refreshToken });
+    axios.post(`${baseURL}/auth/refresh`, { refreshToken });

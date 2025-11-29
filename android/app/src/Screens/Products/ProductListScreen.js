@@ -146,7 +146,7 @@ const ProductListScreen = ({ navigation }) => {
         <View style={styles.container}>
             <View style={styles.headerRow}>
                 <Text style={styles.title}>Products</Text>
-                <Button title="Add product" onPress={goToCreate} />
+                <Button color='#1d4ed8' title="Add product" onPress={goToCreate} />
             </View>
 
             <FlatList

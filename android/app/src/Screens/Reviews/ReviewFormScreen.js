@@ -8,13 +8,13 @@ import {
     Button,
     Alert,
     ScrollView,
-    ActivityIndicator,
+    ActivityIndicator, TouchableOpacity,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-
 import { createReview, updateReview } from '../../api/reviewsApi';
 import { getUsers } from '../../api/usersApi';
 import { getProducts } from '../../api/productsApi';
+import {ArrowLeft} from "lucide-react-native";
 
 const ReviewFormScreen = ({ navigation, route }) => {
     const item = route?.params?.item;
@@ -141,10 +141,14 @@ const ReviewFormScreen = ({ navigation, route }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>
-                {isEdit ? 'Editar review' : 'Crear review'}
-            </Text>
-
+            <View style={styles.topRow}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <ArrowLeft size={22} color="#111827" />
+                </TouchableOpacity>
+                <Text style={styles.title}>
+                    {isEdit ? 'Editar review' : 'Crear review'}
+                </Text>
+            </View>
             {/* Rating */}
             <Text style={styles.label}>Rating (1 a 5)</Text>
             <TextInput
@@ -243,6 +247,7 @@ const ReviewFormScreen = ({ navigation, route }) => {
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
             ) : (
                 <Button
+                    color='#1d4ed8'
                     title={isEdit ? 'Guardar cambios' : 'Crear review'}
                     onPress={handleSave}
                 />

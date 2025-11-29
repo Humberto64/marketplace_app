@@ -9,8 +9,9 @@ import {
     Alert,
     ScrollView,
     ActivityIndicator,
+    TouchableOpacity,
 } from 'react-native';
-
+import { ArrowLeft } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 import { createOrder, updateOrder } from '../../api/ordersApi';
 import { getUsers } from '../../api/usersApi';
@@ -125,7 +126,12 @@ const OrderFormScreen = ({ navigation, route }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>{isEdit ? "Editar orden" : "Crear orden"}</Text>
+            <View style={styles.topRow}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <ArrowLeft size={22} color="#111827" />
+                </TouchableOpacity>
+                <Text style={styles.title}>{isEdit ? "Editar orden" : "Crear orden"}</Text>
+            </View>
 
             {/* 🔹 Currency */}
             <Text style={styles.label}>Currency</Text>
@@ -209,6 +215,7 @@ const OrderFormScreen = ({ navigation, route }) => {
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
             ) : (
                 <Button
+                    color='#1d4ed8'
                     title={isEdit ? "Guardar cambios" : "Crear orden"}
                     onPress={handleSave}
                 />

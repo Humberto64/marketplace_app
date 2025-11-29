@@ -12,9 +12,7 @@ const UsersNavigator = () => {
     return (
         <Stack.Navigator
             screenOptions={({ navigation }) => ({
-                headerRight: () => (
-                    <Button title="☰" onPress={() => navigation.openDrawer()} />
-                ),
+                headerShown: false,
             })}
         >
             <Stack.Screen

@@ -8,8 +8,10 @@ import {
     Alert,
     ScrollView,
     ActivityIndicator,
+    TouchableOpacity,
     Switch,
 } from 'react-native';
+import { ArrowLeft } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker'; // recuerda instalarlo si aún no
 
 import { createProduct, updateProduct } from '../../api/productsApi';
@@ -130,10 +132,14 @@ const ProductFormScreen = ({ navigation, route }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>
-                {isEdit ? 'Editar producto' : 'Crear producto'}
-            </Text>
-
+            <View style={styles.topRow}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <ArrowLeft size={22} color="#111827" />
+                </TouchableOpacity>
+                <Text style={styles.title}>
+                    {isEdit ? 'Editar producto' : 'Crear producto'}
+                </Text>
+            </View>
             {/* Nombre */}
             <Text style={styles.label}>Nombre</Text>
             <TextInput
@@ -216,6 +222,7 @@ const ProductFormScreen = ({ navigation, route }) => {
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
             ) : (
                 <Button
+                    color='#1d4ed8'
                     title={isEdit ? 'Guardar cambios' : 'Crear producto'}
                     onPress={handleSave}
                 />

@@ -9,10 +9,10 @@ import {
     Alert,
     ScrollView,
     ActivityIndicator,
+    TouchableOpacity,
 } from 'react-native';
-
+import { ArrowLeft } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
-
 import { createStore, updateStore } from '../../api/storesApi';
 import { getUsers } from '../../api/usersApi';
 
@@ -111,10 +111,14 @@ const StoreFormScreen = ({ navigation, route }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>
-                {isEdit ? 'Editar tienda' : 'Crear tienda'}
-            </Text>
-
+            <View style={styles.topRow}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <ArrowLeft size={22} color="#111827" />
+                </TouchableOpacity>
+                <Text style={styles.title}>
+                    {isEdit ? 'Editar tienda' : 'Crear tienda'}
+                </Text>
+            </View>
             {/* Nombre */}
             <Text style={styles.label}>Store Name</Text>
             <TextInput
@@ -171,6 +175,7 @@ const StoreFormScreen = ({ navigation, route }) => {
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
             ) : (
                 <Button
+                    color='#1d4ed8'
                     title={isEdit ? 'Guardar cambios' : 'Crear tienda'}
                     onPress={handleSave}
                 />

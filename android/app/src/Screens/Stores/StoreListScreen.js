@@ -159,7 +159,7 @@ const StoreListScreen = ({ navigation }) => {
             {/* Header */}
             <View style={styles.headerRow}>
                 <Text style={styles.title}>Stores</Text>
-                <Button title="Add store" onPress={goToCreate} />
+                <Button  color='#1d4ed8' title="Add store" onPress={goToCreate} />
             </View>
 
             <FlatList

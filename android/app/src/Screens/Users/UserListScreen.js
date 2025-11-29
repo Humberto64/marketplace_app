@@ -125,7 +125,7 @@ const UserListScreen = ({ navigation }) => {
             {/* 🔥 HEADER AL ESTILO REVIEWS */}
             <View style={styles.headerRow}>
                 <Text style={styles.title}>Users</Text>
-                <Button title="Add User" onPress={goToCreate} />
+                <Button color='#1d4ed8' title="Add User" onPress={goToCreate} />
             </View>
 
             <FlatList

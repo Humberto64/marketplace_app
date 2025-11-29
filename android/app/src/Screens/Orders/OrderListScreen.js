@@ -152,7 +152,7 @@ const OrderListScreen = ({ navigation }) => {
             {/* Header */}
             <View style={styles.headerRow}>
                 <Text style={styles.title}>Orders</Text>
-                <Button title="Add order" onPress={goToCreate} />
+                <Button color='#1d4ed8' title="Add order" onPress={goToCreate} />
             </View>
 
             <FlatList
