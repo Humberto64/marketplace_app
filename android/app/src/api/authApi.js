@@ -22,6 +22,5 @@ export const getMe = () => {
 };
 
 // POST /api/auth/refresh
-export const refreshTokenRequest = (refreshToken) => {
-    return apiClient.post('/auth/refresh', { refreshToken });
-};
+export const refreshTokenRequest = (refreshToken) =>
+    axios.post(`${BASE_URL}/auth/refresh/token`, { refreshToken });

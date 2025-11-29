@@ -78,10 +78,7 @@ const StoreFormScreen = ({ navigation, route }) => {
     // Guardar tienda
     const handleSave = async () => {
         if (
-            !form.name.trim() ||
-            !form.description.trim() ||
-            !form.category.trim() ||
-            !form.userId.trim()
+            !form.name.trim() || !form.description.trim() || !form.category.trim() || !form.userId.trim()
         ) {
             Alert.alert('Error', 'Todos los campos son obligatorios.');
             return;

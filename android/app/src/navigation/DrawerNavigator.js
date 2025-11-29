@@ -19,12 +19,35 @@ const DrawerNavigator = () => {
     return (
         <Drawer.Navigator
             screenOptions={({ navigation }) => ({
+                // 👉 NOMBRE DE LA APP EN EL HEADER
+                headerTitle: 'Marketplace',
+                headerTitleAlign: 'left',       // si la quieres al centro: 'center'
+                headerTintColor: '#ffffff',
+                headerStyle: {
+                    backgroundColor: '#1d4ed8',   // azul del header
+                },
+
+                // 👉 BOTÓN HAMBURGUESA A LA DERECHA
                 headerRight: () => (
-                    <Button title="☰" onPress={() => navigation.openDrawer()} />
+                    <Button
+                        title="☰"
+                        color="#ffffff"
+                        onPress={() => navigation.openDrawer()}
+                    />
                 ),
-                headerLeft: () => null, // ocultamos el hamburguesa por defecto de la izquierda
+                headerLeft: () => null,
+
+                // 👉 ESTILOS DEL DRAWER (SIDEBAR)
                 drawerStyle: {
-                    width: '70%', // la sidebar no ocupa toda la pantalla
+                    width: '70%',
+                    backgroundColor: '#1d4ed8',   // azul de la sidebar
+                },
+                drawerActiveTintColor: '#ffffff',          // texto de opción activa
+                drawerInactiveTintColor: '#e5e7eb',        // texto de opción inactiva
+                drawerActiveBackgroundColor: 'rgba(255,255,255,0.18)',
+                drawerLabelStyle: {
+                    fontSize: 16,
+                    fontWeight: '500',
                 },
             })}
         >
@@ -42,6 +65,7 @@ const DrawerNavigator = () => {
                     headerShown: false,
                 }}
             />
+
             <Drawer.Screen
                 name="Stores"
                 component={StoresNavigator}
@@ -50,7 +74,6 @@ const DrawerNavigator = () => {
                     headerShown: false,
                 }}
             />
-
 
             <Drawer.Screen
                 name="Users"
@@ -61,7 +84,6 @@ const DrawerNavigator = () => {
                 }}
             />
 
-
             <Drawer.Screen
                 name="Reviews"
                 component={ReviewsNavigator}
@@ -71,23 +93,21 @@ const DrawerNavigator = () => {
                 }}
             />
 
-
             <Drawer.Screen
                 name="Orders"
                 component={OrdersNavigator}
                 options={{
                     title: 'Orders',
-                    headerShown: false
+                    headerShown: false,
                 }}
             />
-
 
             <Drawer.Screen
                 name="OrderItems"
                 component={OrderItemsNavigator}
                 options={{
                     title: 'Order items',
-                    headerShown: false, // 👈 ocultamos el header del Drawer para esta pantalla
+                    headerShown: false,
                 }}
             />
 

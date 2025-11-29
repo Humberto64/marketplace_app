@@ -55,7 +55,18 @@ const OrderListScreen = ({ navigation }) => {
     const goToEdit = (item) => {
         navigation.navigate('OrderForm', { item });
     };
+    const formatDate = (rawDate) => {
+        if (!rawDate) return 'N/A';
 
+        const date = new Date(rawDate);
+        if (isNaN(date)) return rawDate; // fallback
+
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day   = String(date.getDate()).padStart(2, '0');
+        const year  = date.getFullYear();
+
+        return `${month}/${day}/${year}`;
+    };
     const handleDelete = (item) => {
         Alert.alert(
             'Eliminar orden',
@@ -84,17 +95,30 @@ const OrderListScreen = ({ navigation }) => {
             <View style={styles.card}>
                 <View style={styles.cardHeader}>
                     <Text style={styles.orderId}>Order #{item.id}</Text>
-                    <Text style={styles.status}>{item.status}</Text>
+                    <Text style={styles.status}>{item.paymentStatus}</Text>
+                    <Text style={styles.line}>
+                        Currency: <Text style={styles.bold}>{item.currency}</Text>
+                    </Text>
                 </View>
 
                 <Text style={styles.line}>
-                    Total: <Text style={styles.bold}>{item.total}</Text>
+                    Total: <Text style={styles.bold}>{item.subtotal}</Text>
                 </Text>
-
+                <Text style={styles.line}>
+                    Total Amount: <Text style={styles.bold}>{item.totalAmount}</Text>
+                </Text>
+                <Text style={styles.line}>
+                    UserId: <Text style={styles.bold}>{item.userId}</Text>
+                </Text>
+                <Text style={styles.line}>
+                    Method: <Text style={styles.bold}>{item.payMethod}</Text>
+                </Text>
                 <Text style={styles.line}>
                     User ID: <Text style={styles.bold}>{item.userId}</Text>
                 </Text>
-
+                <Text style={styles.line}>
+                    Order Date: <Text style={styles.bold}>{formatDate(item.orderDate)}</Text>
+                </Text>
                 <View style={styles.rowActions}>
                     <TouchableOpacity
                         style={[styles.btn, styles.btnEdit]}

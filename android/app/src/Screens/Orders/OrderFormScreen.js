@@ -20,9 +20,16 @@ const currencyOptions = [
     { label: "Dólares Estadounidenses", value: "USD" },
     { label: "Euros", value: "Eur" },
 ];
+const paymentMethodOptions = [
+    { label: "Visa", value: "Visa" },
+    { label: "Mastercard", value: "Mastercard" },
+    { label: "Paypal", value: "Paypal" },
+];
+const paymentStatusOptions = [
+    { label: "Completed", value: "Completed" },
+    { label: "Pending", value: "Pending" },
+];
 
-const paymentMethodOptions = ["CASH", "CREDIT_CARD", "DEBIT_CARD", "TRANSFER", "QR"];
-const paymentStatusOptions = ["PENDING", "COMPLETED", "FAILED"];
 
 const OrderFormScreen = ({ navigation, route }) => {
     const item = route?.params?.item;
@@ -142,8 +149,8 @@ const OrderFormScreen = ({ navigation, route }) => {
                     onValueChange={(value) => updateField("paymentMethod", value)}
                 >
                     <Picker.Item label="--Payment Method--" value="" />
-                    {paymentMethodOptions.map((pm) => (
-                        <Picker.Item key={pm} label={pm} value={pm} />
+                    {paymentMethodOptions.map((c) => (
+                        <Picker.Item key={c.value} label={c.label} value={c.value} />
                     ))}
                 </Picker>
             </View>
@@ -156,8 +163,8 @@ const OrderFormScreen = ({ navigation, route }) => {
                     onValueChange={(value) => updateField("paymentStatus", value)}
                 >
                     <Picker.Item label="--Payment Status--" value="" />
-                    {paymentStatusOptions.map((ps) => (
-                        <Picker.Item key={ps} label={ps} value={ps} />
+                    {paymentStatusOptions.map((c) => (
+                        <Picker.Item key={c.value} label={c.label} value={c.value} />
                     ))}
                 </Picker>
             </View>

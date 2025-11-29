@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginRequest } from '../../api/authApi';
-
+import { resetToMain } from '../../navigation/navigationRef';
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -44,7 +44,7 @@ const LoginScreen = ({ navigation }) => {
             setLoading(false);
 
             // Ir al dashboard y resetear la navegación
-            navigation.navigate('Dashboard');
+            resetToMain();
         } catch (error) {
             setLoading(false);
             console.log('Login error:', error?.response?.data || error.message);

@@ -50,11 +50,22 @@ const ReviewListScreen = ({ navigation }) => {
 
     const goToCreate = () => navigation.navigate('ReviewForm');
     const goToEdit = (item) => navigation.navigate('ReviewForm', { item });
+    const formatDate = (rawDate) => {
+        if (!rawDate) return 'N/A';
 
+        const date = new Date(rawDate);
+        if (isNaN(date)) return rawDate; // fallback
+
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day   = String(date.getDate()).padStart(2, '0');
+        const year  = date.getFullYear();
+
+        return `${month}/${day}/${year}`;
+    };
     const handleDelete = (item) => {
         Alert.alert(
             'Eliminar Review',
-            `¿Eliminar review de "${item.userName}" para "${item.productName}"?`,
+            `¿Eliminar review Review#${item.id}?`,
             [
                 { text: 'Cancelar', style: 'cancel' },
                 {
@@ -82,19 +93,28 @@ const ReviewListScreen = ({ navigation }) => {
             <TouchableOpacity onPress={() => goToEdit(item)}>
                 <View style={styles.card}>
                     <View style={styles.cardHeader}>
-                        <Text style={styles.reviewId}>Review #{item.id}</Text>
-                        <Text style={styles.userName}>{item.userName}</Text>
+                        <Text style={styles.line,styles.bold}>
+                         <Text style={styles.reviewId}>Review #{item.id}</Text>
+                        </Text>
                         <Text style={styles.rating}>⭐ {safeRating}/5</Text>
                     </View>
 
-                    <Text style={styles.comment} numberOfLines={2}>
-                        {item.comment}
+                    <Text style={styles.line,styles.bold}>
+                        Comment: <Text style={styles.comment}>{item.comment}</Text>
                     </Text>
 
                     <Text style={styles.productName}>
-                        Producto:<Text style={styles.bold}>{item.productName}</Text>
+                        ProductID: <Text style={styles.bold}>{item.productId}</Text>
                     </Text>
-
+                    <Text style={styles.productName}>
+                        UserID: <Text style={styles.bold}>{item.userId}</Text>
+                    </Text>
+                    <Text style={styles.line}>
+                        Created at: <Text style={styles.bold}>{formatDate(item.createdDate)}</Text>
+                    </Text>
+                    <Text style={styles.line}>
+                        Updated at: <Text style={styles.bold}>{formatDate(item.updatedDate)}</Text>
+                    </Text>
                     <View style={styles.rowActions}>
                         <TouchableOpacity
                             style={[styles.btn, styles.btnEdit]}

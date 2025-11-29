@@ -50,7 +50,18 @@ const ProductListScreen = ({ navigation }) => {
 
     const goToCreate = () => navigation.navigate('ProductForm');
     const goToEdit = (item) => navigation.navigate('ProductForm', { item });
+    const formatDate = (rawDate) => {
+        if (!rawDate) return 'N/A';
 
+        const date = new Date(rawDate);
+        if (isNaN(date)) return rawDate; // fallback
+
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day   = String(date.getDate()).padStart(2, '0');
+        const year  = date.getFullYear();
+
+        return `${month}/${day}/${year}`;
+    };
     const handleDelete = (item) => {
         Alert.alert(
             'Eliminar producto',
@@ -82,8 +93,16 @@ const ProductListScreen = ({ navigation }) => {
                     <Text style={styles.line,styles.bold}>
                         Store: <Text style={styles.storeName}>{item.storeName}</Text>
                     </Text>
+                    <Text style={styles.line}>
+                        Available:{" "}
+                        <Text style={[styles.bold, { color: item.isAvailable ? "#16a34a" : "#dc2626" }]}>
+                            {item.isAvailable ? "Yes" : "No"}
+                        </Text>
+                    </Text>
                 </View>
-
+                <Text style={styles.line}>
+                    Description: <Text style={styles.bold}>{item.description}</Text>
+                </Text>
                 <Text style={styles.line}>
                     Precio: <Text style={styles.bold}>{item.price}</Text>
                 </Text>
@@ -91,7 +110,9 @@ const ProductListScreen = ({ navigation }) => {
                 <Text style={styles.line}>
                     Stock: <Text style={styles.bold}>{item.stock}</Text>
                 </Text>
-
+                <Text style={styles.line}>
+                    Created at: <Text style={styles.bold}>{formatDate(item.publishedDate)}</Text>
+                </Text>
                 <View style={styles.rowActions}>
                     <TouchableOpacity
                         style={[styles.btn, styles.btnEdit]}

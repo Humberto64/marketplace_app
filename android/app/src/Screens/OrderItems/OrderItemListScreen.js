@@ -87,13 +87,16 @@ const OrderItemListScreen = ({ navigation }) => {
                 {/* Primera fila: nombre + orderId */}
                 <View style={styles.cardHeader}>
                     <Text style={styles.productName}>
-                        {item.productName || `Producto #${item.productId}`}
+                       Product: {item.productName || `Producto #${item.productId}`}
                     </Text>
-                    <Text style={styles.orderId}>Order #{item.orderId}</Text>
+                    <Text style={styles.bold}>
+                        <Text style={styles.orderId}>Order #{item.orderId}</Text>
+                    </Text>
+
                 </View>
 
                 {/* Datos principales */}
-                <Text style={styles.line}>Qty: <Text style={styles.bold}>{item.quantity}</Text></Text>
+                <Text style={styles.line}>Quantity: <Text style={styles.bold}>{item.quantity}</Text></Text>
                 <Text style={styles.line}>Price: <Text style={styles.bold}>{item.price}</Text></Text>
                 <Text style={styles.line}>Subtotal: <Text style={styles.bold}>{item.subtotal}</Text></Text>
 

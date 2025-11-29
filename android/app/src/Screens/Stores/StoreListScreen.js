@@ -91,11 +91,17 @@ const StoreListScreen = ({ navigation }) => {
         return (
             <TouchableOpacity onPress={() => goToEdit(item)}>
                 <View style={styles.card}>
-
-                    {/* Nombre */}
                     <View style={styles.cardHeader}>
                         <Text style={styles.storeName}>{item.name}</Text>
+                        <Text style={styles.line}>
+                            Active:{" "}
+                            <Text style={[styles.bold, { color: item.isActive ? "#16a34a" : "#dc2626" }]}>
+                                {item.isActive ? "Yes" : "No"}
+                            </Text>
+                        </Text>
                     </View>
+                    {/* Nombre */}
+
 
                     {/* Descripción */}
                     <Text style={styles.description}>
@@ -110,14 +116,6 @@ const StoreListScreen = ({ navigation }) => {
                     {/* Fecha */}
                     <Text style={styles.line}>
                         Created at: <Text style={styles.bold}>{formatDate(item.createdDate)}</Text>
-                    </Text>
-
-                    {/* Activo */}
-                    <Text style={styles.line}>
-                        Active:{" "}
-                        <Text style={[styles.bold, { color: item.isActive ? "#16a34a" : "#dc2626" }]}>
-                            {item.isActive ? "Yes" : "No"}
-                        </Text>
                     </Text>
 
                     {/* User ID */}
