@@ -99,8 +99,19 @@ const OrderItemListScreen = ({ navigation }) => {
 
                 {/* Botones de acción */}
                 <View style={styles.rowActions}>
-                    <Button title="Edit" onPress={() => goToEdit(item)} />
-                    <Button title="Delete" color="red" onPress={() => handleDelete(item)} />
+                    <TouchableOpacity
+                        style={[styles.btn, styles.btnEdit]}
+                        onPress={() => goToEdit(item)}
+                    >
+                        <Text style={styles.btnText}>EDIT</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.btn, styles.btnDelete]}
+                        onPress={() => handleDelete(item)}
+                    >
+                        <Text style={styles.btnText}>DELETE</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </TouchableOpacity>
@@ -148,6 +159,32 @@ export default OrderItemListScreen;
 // ===== STYLES ===== //
 
 const styles = StyleSheet.create({
+    rowActions: {
+        flexDirection: 'row',
+        marginTop: 12,
+    },
+
+    btn: {
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+
+    btnEdit: {
+        backgroundColor: '#1d4ed8',
+    },
+
+    btnDelete: {
+        backgroundColor: '#dc2626',
+    },
+
+    btnText: {
+        color: 'white',
+        fontWeight: '700',
+    },
+
     container: {
         flex: 1,
         padding: 16,

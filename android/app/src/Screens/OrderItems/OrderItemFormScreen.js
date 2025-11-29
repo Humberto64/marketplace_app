@@ -1,69 +1,131 @@
-// android/app/src/Screens/OrderItems/OrderItemFormScreen.js
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import {
     View,
     Text,
     TextInput,
     StyleSheet,
     Button,
-    ActivityIndicator,
     Alert,
     ScrollView,
+    ActivityIndicator,
 } from 'react-native';
-import {
-    createOrderItem,
-    updateOrderItem,
-} from '../../api/orderItemsApi';
+import { Picker } from '@react-native-picker/picker';
+
+import { createOrderItem, updateOrderItem } from '../../api/orderItemsApi';
+import { getProducts } from '../../api/productsApi';
+import { getOrders } from '../../api/ordersApi';
 
 const OrderItemFormScreen = ({ navigation, route }) => {
     const item = route?.params?.item;
     const isEdit = !!item;
 
-    const [quantity, setQuantity] = useState(
-        item ? String(item.quantity) : ''
-    );
-    const [price, setPrice] = useState(item ? String(item.price) : '');
-    const [subtotal, setSubtotal] = useState(
-        item ? String(item.subtotal) : ''
-    );
-    const [orderId, setOrderId] = useState(
-        item ? String(item.orderId) : ''
-    );
-    const [productId, setProductId] = useState(
-        item ? String(item.productId) : ''
-    );
+    // 🔹 ÚNICO ESTADO DEL FORMULARIO
+    const [form, setForm] = useState({
+        quantity: item ? String(item.quantity) : "",
+        price: item ? String(item.price) : "",
+        subtotal: item ? String(item.subtotal) : "",
+        orderId: item?.orderId ? String(item.orderId) : "",
+        productId: item?.productId ? String(item.productId) : "",
+    });
 
+    const [products, setProducts] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [loadingData, setLoadingData] = useState(true);
     const [loading, setLoading] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: isEdit ? 'Edit order item' : 'Add order item',
+            title: isEdit ? "Edit order item" : "Add order item",
         });
     }, [navigation, isEdit]);
 
+    const updateField = (field, value) => {
+        setForm((prev) => ({ ...prev, [field]: value }));
+    };
+
+    // 🔹 Cargar productos y órdenes
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoadingData(true);
+                const [prodRes, orderRes] = await Promise.all([
+                    getProducts(),
+                    getOrders(),
+                ]);
+
+                setProducts(prodRes || []);
+                setOrders(orderRes || []);
+
+                // Autoseleccionar valores si se está creando
+                setForm((prev) => {
+                    const next = { ...prev };
+
+                    if (!isEdit) {
+                        if (!next.productId && prodRes.length > 0)
+                            next.productId = String(prodRes[0].id);
+                        if (!next.orderId && orderRes.length > 0)
+                            next.orderId = String(orderRes[0].id);
+                    }
+
+                    return next;
+                });
+            } catch (error) {
+                console.log("Error cargando datos:", error);
+                Alert.alert("Error", "No se pudieron cargar productos u órdenes");
+            } finally {
+                setLoadingData(false);
+            }
+        };
+
+        fetchData();
+    }, [isEdit]);
+
+    // 🔹 Recalcular subtotal cuando quantity o price cambian
+    useEffect(() => {
+        const qty = parseFloat(form.quantity);
+        const pr = parseFloat(form.price);
+
+        if (!isNaN(qty) && !isNaN(pr)) {
+            updateField("subtotal", String(qty * pr));
+        }
+    }, [form.quantity, form.price]);
+
+    // 🔹 Actualizar precio cuando se cambia el producto
+    const handleProductSelect = (productId) => {
+        updateField("productId", String(productId));
+        const product = products.find((p) => p.id == productId);
+
+        if (product) {
+            updateField("price", String(product.price ?? 0));
+        }
+    };
+
     const handleSave = async () => {
-        if (!quantity || !price || !subtotal || !orderId || !productId) {
-            Alert.alert('Error', 'Todos los campos son obligatorios');
+        if (
+            !form.quantity.trim() ||
+            !form.price.trim() ||
+            !form.subtotal.trim() ||
+            !form.orderId.trim() ||
+            !form.productId.trim()
+        ) {
+            Alert.alert("Error", "Todos los campos son obligatorios");
             return;
         }
 
         const payload = {
-            quantity: parseInt(quantity, 10),
-            price: parseFloat(price),
-            subtotal: parseFloat(subtotal),
-            orderId: parseInt(orderId, 10),
-            productId: parseInt(productId, 10),
-            // productName no es obligatorio en el request, lo rellena el backend
+            quantity: parseInt(form.quantity, 10),
+            price: parseFloat(form.price),
+            subtotal: parseFloat(form.subtotal),
+            orderId: parseInt(form.orderId, 10),
+            productId: parseInt(form.productId, 10),
         };
 
         if (
             Number.isNaN(payload.quantity) ||
             Number.isNaN(payload.price) ||
-            Number.isNaN(payload.subtotal) ||
-            Number.isNaN(payload.orderId) ||
-            Number.isNaN(payload.productId)
+            Number.isNaN(payload.subtotal)
         ) {
-            Alert.alert('Error', 'Revisa que todos los campos numéricos sean válidos');
+            Alert.alert("Error", "Valores numéricos inválidos");
             return;
         }
 
@@ -80,84 +142,98 @@ const OrderItemFormScreen = ({ navigation, route }) => {
             navigation.goBack();
         } catch (error) {
             setLoading(false);
-            console.log('Error guardando orderItem:', error?.response?.data || error);
-            Alert.alert('Error', 'No se pudo guardar el item');
+            console.log("Error guardando item:", error?.response?.data || error);
+            Alert.alert("Error", "No se pudo guardar el item");
         }
-    };
-
-    const fillSubtotalFromQtyPrice = () => {
-        const q = parseFloat(quantity);
-        const p = parseFloat(price);
-        if (Number.isNaN(q) || Number.isNaN(p)) {
-            Alert.alert('Error', 'Cantidad y precio deben ser numéricos');
-            return;
-        }
-        setSubtotal(String(q * p));
     };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.title}>
-                {isEdit ? 'Editar item de orden' : 'Crear item de orden'}
+                {isEdit ? "Editar item de orden" : "Crear item de orden"}
             </Text>
 
-            <Text style={styles.label}>Quantity</Text>
-            <TextInput
-                style={styles.input}
-                value={quantity}
-                onChangeText={setQuantity}
-                keyboardType="numeric"
-                placeholder="Ej: 2"
-            />
+            {/* PRODUCT */}
+            <Text style={styles.label}>Producto</Text>
+            {loadingData ? (
+                <ActivityIndicator size="small" />
+            ) : (
+                <View style={styles.pickerWrapper}>
+                    <Picker
+                        selectedValue={form.productId}
+                        onValueChange={handleProductSelect}
+                    >
+                        <Picker.Item label="-- Select Product --" value="" />
+                        {products.map((p) => (
+                            <Picker.Item
+                                key={p.id}
+                                label={p.name}
+                                value={String(p.id)}
+                            />
+                        ))}
+                    </Picker>
+                </View>
+            )}
 
+            {/* PRICE */}
             <Text style={styles.label}>Price</Text>
             <TextInput
                 style={styles.input}
-                value={price}
-                onChangeText={setPrice}
+                value={form.price}
                 keyboardType="numeric"
-                placeholder="Ej: 10.5"
+                onChangeText={(text) =>
+                    updateField("price", text.replace(/[^0-9.]/g, ""))
+                }
             />
 
-            <View style={styles.row}>
-                <View style={{ flex: 1, marginRight: 8 }}>
-                    <Text style={styles.label}>Subtotal</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={subtotal}
-                        onChangeText={setSubtotal}
-                        keyboardType="numeric"
-                        placeholder="Ej: 21.0"
-                    />
-                </View>
-                <View style={{ justifyContent: 'flex-end' }}>
-                    <Button title="Qty×Price" onPress={fillSubtotalFromQtyPrice} />
-                </View>
-            </View>
-
-            <Text style={styles.label}>Order ID</Text>
+            {/* QUANTITY */}
+            <Text style={styles.label}>Quantity</Text>
             <TextInput
                 style={styles.input}
-                value={orderId}
-                onChangeText={setOrderId}
+                value={form.quantity}
                 keyboardType="numeric"
-                placeholder="ID de la orden"
+                onChangeText={(text) =>
+                    updateField("quantity", text.replace(/[^0-9]/g, ""))
+                }
             />
 
-            <Text style={styles.label}>Product ID</Text>
+            {/* SUBTOTAL */}
+            <Text style={styles.label}>Subtotal</Text>
             <TextInput
                 style={styles.input}
-                value={productId}
-                onChangeText={setProductId}
-                keyboardType="numeric"
-                placeholder="ID del producto"
+                value={form.subtotal}
+                editable={false}
             />
+
+            {/* ORDER */}
+            <Text style={styles.label}>Order</Text>
+            {loadingData ? (
+                <ActivityIndicator size="small" />
+            ) : (
+                <View style={styles.pickerWrapper}>
+                    <Picker
+                        selectedValue={form.orderId}
+                        onValueChange={(value) =>
+                            updateField("orderId", String(value))
+                        }
+                    >
+                        <Picker.Item label="-- Select Order --" value="" />
+                        {orders.map((o) => (
+                            <Picker.Item
+                                key={o.id}
+                                label={`Order #${o.id}`}
+                                value={String(o.id)}
+                            />
+                        ))}
+                    </Picker>
+                </View>
+            )}
 
             {loading ? (
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
             ) : (
                 <Button
-                    title={isEdit ? 'Guardar cambios' : 'Crear item'}
+                    title={isEdit ? "Guardar cambios" : "Crear item"}
                     onPress={handleSave}
                 />
             )}
@@ -173,10 +249,10 @@ const styles = StyleSheet.create({
         paddingBottom: 32,
     },
     title: {
+        textAlign: "center",
         fontSize: 22,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 16,
-        textAlign: 'center',
     },
     label: {
         marginTop: 8,
@@ -184,14 +260,17 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: "#ccc",
         borderRadius: 6,
         paddingHorizontal: 10,
         paddingVertical: 8,
+        marginBottom: 8,
     },
-    row: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        marginTop: 8,
+    pickerWrapper: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 6,
+        overflow: "hidden",
+        marginBottom: 8,
     },
 });

@@ -79,7 +79,9 @@ const ProductListScreen = ({ navigation }) => {
             <View style={styles.card}>
                 <View style={styles.cardHeader}>
                     <Text style={styles.productName}>{item.name}</Text>
-                    <Text style={styles.storeName}>{item.storeName}</Text>
+                    <Text style={styles.line,styles.bold}>
+                        Store: <Text style={styles.storeName}>{item.storeName}</Text>
+                    </Text>
                 </View>
 
                 <Text style={styles.line}>
@@ -91,9 +93,21 @@ const ProductListScreen = ({ navigation }) => {
                 </Text>
 
                 <View style={styles.rowActions}>
-                    <Button title="Edit" onPress={() => goToEdit(item)} />
-                    <Button title="Delete" color="red" onPress={() => handleDelete(item)} />
+                    <TouchableOpacity
+                        style={[styles.btn, styles.btnEdit]}
+                        onPress={() => goToEdit(item)}
+                    >
+                        <Text style={styles.btnText}>EDIT</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.btn, styles.btnDelete]}
+                        onPress={() => handleDelete(item)}
+                    >
+                        <Text style={styles.btnText}>DELETE</Text>
+                    </TouchableOpacity>
                 </View>
+
             </View>
         </TouchableOpacity>
     );
@@ -137,6 +151,32 @@ const ProductListScreen = ({ navigation }) => {
 export default ProductListScreen;
 
 const styles = StyleSheet.create({
+    rowActions: {
+        flexDirection: 'row',
+        marginTop: 12,
+    },
+
+    btn: {
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+
+    btnEdit: {
+        backgroundColor: '#1d4ed8',
+    },
+
+    btnDelete: {
+        backgroundColor: '#dc2626',
+    },
+
+    btnText: {
+        color: 'white',
+        fontWeight: '700',
+    },
+
     container: { flex: 1, padding: 16 },
     headerRow: {
         flexDirection: 'row',

@@ -1,4 +1,3 @@
-// android/app/src/Screens/Users/UserFormScreen.js
 import React, { useState, useLayoutEffect } from 'react';
 import {
     View,
@@ -10,6 +9,7 @@ import {
     ScrollView,
     ActivityIndicator,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 
 import {
     createUser,
@@ -20,9 +20,14 @@ const UserFormScreen = ({ navigation, route }) => {
     const item = route?.params?.item;
     const isEdit = !!item;
 
-    const [name, setName] = useState(item ? item.name : '');
-    const [email, setEmail] = useState(item ? item.email : '');
-    const [phone, setPhone] = useState(item ? item.phone : '');
+    const [user, setUser] = useState({
+        firstName: item?.firstName ?? '',
+        lastName: item?.lastName ?? '',
+        email: item?.email ?? '',
+        phone: item?.phone ? String(item.phone) : '',
+        address: item?.address ?? '',
+        role: item?.role ?? '',
+    });
 
     const [loading, setLoading] = useState(false);
 
@@ -32,19 +37,49 @@ const UserFormScreen = ({ navigation, route }) => {
         });
     }, [navigation, isEdit]);
 
+    // Versión mobile del handleChange (no hay e.target.name)
+    const handleChange = (field, value) => {
+        setUser(prev => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
     const handleSave = async () => {
-        if (!name || !email) {
-            Alert.alert('Error', 'Nombre y email son obligatorios');
+        // Validaciones básicas
+        if (!user.firstName || !user.lastName || !user.email || !user.role) {
+            Alert.alert('Error', 'Nombre, apellido, email y rol son obligatorios');
             return;
         }
 
-        const payload = { name, email, phone };
+        const phoneNumber =
+            user.phone && user.phone.trim() !== ''
+                ? Number(user.phone)
+                : null;
+
+        if (user.phone && Number.isNaN(phoneNumber)) {
+            Alert.alert('Error', 'El teléfono debe ser numérico');
+            return;
+        }
+
+        const payload = {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            address: user.address,
+            phone: phoneNumber,
+            role: user.role,
+            // password: user.password, // si tu backend lo necesita
+        };
 
         try {
             setLoading(true);
 
-            if (isEdit) await updateUser(item.id, payload);
-            else await createUser(payload);
+            if (isEdit) {
+                await updateUser(item.id, payload);
+            } else {
+                await createUser(payload);
+            }
 
             setLoading(false);
             navigation.goBack();
@@ -61,31 +96,84 @@ const UserFormScreen = ({ navigation, route }) => {
                 {isEdit ? 'Editar usuario' : 'Crear usuario'}
             </Text>
 
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-                style={styles.input}
-                value={name}
-                onChangeText={setName}
-                placeholder="Ej: Juan Pérez"
-            />
+            <View style={styles.row}>
+                <View style={styles.half}>
+                    <Text style={styles.label}>Nombre</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={user.firstName}
+                        onChangeText={(value) => handleChange('firstName', value)}
+                        placeholder="First Name"
+                    />
+                </View>
+
+                <View style={styles.half}>
+                    <Text style={styles.label}>Apellido</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={user.lastName}
+                        onChangeText={(value) => handleChange('lastName', value)}
+                        placeholder="Last Name"
+                    />
+                </View>
+            </View>
 
             <Text style={styles.label}>Email</Text>
             <TextInput
                 style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Ej: juan@mail.com"
+                value={user.email}
+                onChangeText={(value) => handleChange('email', value)}
+                placeholder="Email Address"
                 keyboardType="email-address"
+                autoCapitalize="none"
             />
 
-            <Text style={styles.label}>Teléfono</Text>
+            <View style={styles.row}>
+                <View style={styles.half}>
+                    <Text style={styles.label}>Dirección</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={user.address}
+                        onChangeText={(value) => handleChange('address', value)}
+                        placeholder="Address"
+                    />
+                </View>
+
+                <View style={styles.half}>
+                    <Text style={styles.label}>Teléfono</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={user.phone}
+                        onChangeText={(value) => handleChange('phone', value)}
+                        placeholder="Phone"
+                        keyboardType="numeric"
+                    />
+                </View>
+            </View>
+
+            <Text style={styles.label}>Role</Text>
+            <View style={styles.pickerWrapper}>
+                <Picker
+                    selectedValue={user.role}
+                    onValueChange={(value) => handleChange('role', value)}
+                    style={styles.picker}
+                >
+                    <Picker.Item label="--Select Role--" value="" />
+                    <Picker.Item label="ADMIN" value="ADMIN" />
+                    <Picker.Item label="USER" value="USER" />
+                </Picker>
+            </View>
+
+            {/* Si algún día quieres password en el formulario:
+            <Text style={styles.label}>Password</Text>
             <TextInput
                 style={styles.input}
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="Ej: 70000000"
-                keyboardType="numeric"
+                value={user.password}
+                onChangeText={(value) => handleChange('password', value)}
+                placeholder="Password"
+                secureTextEntry
             />
+            */}
 
             {loading ? (
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
@@ -99,28 +187,51 @@ const UserFormScreen = ({ navigation, route }) => {
     );
 };
 
-export default UserFormScreen;
-
 const styles = StyleSheet.create({
     container: {
         padding: 16,
-        paddingBottom: 32,
+        backgroundColor: '#f5f5f5',
+        flexGrow: 1,
     },
-
     title: {
-        textAlign: 'center',
         fontSize: 22,
+        textAlign: 'center',
         fontWeight: 'bold',
         marginBottom: 16,
     },
-
-    label: { marginTop: 8, marginBottom: 4 },
-
+    label: {
+        marginTop: 8,
+        marginBottom: 4,
+        fontWeight: '500',
+    },
     input: {
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 6,
         paddingHorizontal: 10,
         paddingVertical: 8,
+        backgroundColor: 'white',
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 8,
+    },
+    half: {
+        flex: 1,
+    },
+    pickerWrapper: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 6,
+        overflow: 'hidden',
+        backgroundColor: 'white',
+        marginBottom: 12,
+    },
+    picker: {
+        height: 45,
+        width: '100%',
     },
 });
+
+export default UserFormScreen;

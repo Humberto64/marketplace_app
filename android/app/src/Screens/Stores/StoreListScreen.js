@@ -13,10 +13,7 @@ import {
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 
-import {
-    getStores,
-    deleteStore,
-} from '../../api/storesApi';
+import { getStores, deleteStore } from '../../api/storesApi';
 
 const StoreListScreen = ({ navigation }) => {
     const [stores, setStores] = useState([]);
@@ -50,6 +47,18 @@ const StoreListScreen = ({ navigation }) => {
 
     const goToCreate = () => navigation.navigate('StoreForm');
     const goToEdit = (item) => navigation.navigate('StoreForm', { item });
+    const formatDate = (rawDate) => {
+        if (!rawDate) return '';
+
+        const date = new Date(rawDate);
+        if (isNaN(date)) return rawDate; // fallback
+
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day   = String(date.getDate()).padStart(2, '0');
+        const year  = date.getFullYear();
+
+        return `${month}/${day}/${year}`;
+    };
 
     const handleDelete = (item) => {
         Alert.alert(
@@ -74,29 +83,69 @@ const StoreListScreen = ({ navigation }) => {
         );
     };
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity onPress={() => goToEdit(item)}>
-            <View style={styles.card}>
-                <View style={styles.cardHeader}>
-                    <Text style={styles.storeName}>{item.name}</Text>
-                    <Text style={styles.location}>{item.location}</Text>
+    const renderItem = ({ item }) => {
+        const createdAt = item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString()
+            : "—";
+
+        return (
+            <TouchableOpacity onPress={() => goToEdit(item)}>
+                <View style={styles.card}>
+
+                    {/* Nombre */}
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.storeName}>{item.name}</Text>
+                    </View>
+
+                    {/* Descripción */}
+                    <Text style={styles.description}>
+                        {item.description || "No description"}
+                    </Text>
+
+                    {/* Categoría */}
+                    <Text style={styles.line}>
+                        Category: <Text style={styles.bold}>{item.category}</Text>
+                    </Text>
+
+                    {/* Fecha */}
+                    <Text style={styles.line}>
+                        Created at: <Text style={styles.bold}>{formatDate(item.createdDate)}</Text>
+                    </Text>
+
+                    {/* Activo */}
+                    <Text style={styles.line}>
+                        Active:{" "}
+                        <Text style={[styles.bold, { color: item.isActive ? "#16a34a" : "#dc2626" }]}>
+                            {item.isActive ? "Yes" : "No"}
+                        </Text>
+                    </Text>
+
+                    {/* User ID */}
+                    <Text style={styles.line}>
+                        User ID: <Text style={styles.bold}>{item.userId}</Text>
+                    </Text>
+
+                    {/* Botones */}
+                    <View style={styles.rowActions}>
+                        <TouchableOpacity
+                            style={[styles.btn, styles.btnEdit]}
+                            onPress={() => goToEdit(item)}
+                        >
+                            <Text style={styles.btnText}>EDIT</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.btn, styles.btnDelete]}
+                            onPress={() => handleDelete(item)}
+                        >
+                            <Text style={styles.btnText}>DELETE</Text>
+                        </TouchableOpacity>
+                    </View>
+
                 </View>
-
-                <Text style={styles.description} numberOfLines={2}>
-                    {item.description}
-                </Text>
-
-                <Text style={styles.date}>
-                    Creada el: {new Date(item.createdAt).toLocaleString()}
-                </Text>
-
-                <View style={styles.rowActions}>
-                    <Button title="Edit" onPress={() => goToEdit(item)} />
-                    <Button title="Delete" color="red" onPress={() => handleDelete(item)} />
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     if (loading) {
         return (
@@ -163,26 +212,30 @@ const styles = StyleSheet.create({
     },
 
     storeName: { fontSize: 16, fontWeight: '600' },
-    location: { fontSize: 12, color: '#0284c7', fontWeight: '600' },
+    description: { marginTop: 6, color: '#444', fontSize: 14 },
 
-    description: {
-        marginTop: 6,
-        color: '#444',
-        fontSize: 14,
-    },
-
-    date: {
-        marginTop: 6,
-        fontSize: 12,
-        color: '#777',
-    },
-
+    line: { marginTop: 6, fontSize: 14 },
     bold: { fontWeight: 'bold' },
 
     rowActions: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         marginTop: 12,
+    },
+
+    btn: {
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+
+    btnEdit: { backgroundColor: '#1d4ed8' },
+    btnDelete: { backgroundColor: '#dc2626' },
+
+    btnText: {
+        color: 'white',
+        fontWeight: '700',
     },
 
     center: {

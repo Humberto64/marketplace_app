@@ -20,7 +20,7 @@ import apiClient from './apiClient';
  * Si no viene envuelto en ApiResponse, igual lo manejamos.
  */
 export const getDashboardStats = async () => {
-    const res = await apiClient.get('/dashboard');
+    const res = await apiClient.get('/dashboard/stats');
     const body = res.data;
     // intentamos data.data (ApiResponse) y si no, data directo
     return body?.data ?? body;

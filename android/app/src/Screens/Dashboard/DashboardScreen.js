@@ -9,135 +9,225 @@ import {
     RefreshControl,
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-
 import { getDashboardStats } from '../../api/dashboardApi';
+import { getUsers } from '../../api/usersApi';
+import { getProducts } from '../../api/productsApi';
+import { getStores } from '../../api/storesApi';
+import { getOrders } from '../../api/ordersApi';
+import { getOrderItems } from '../../api/orderItemsApi';
+import { getReviews } from '../../api/reviewsApi';
 
 const DashboardScreen = () => {
-    const [stats, setStats] = useState(null);
+    const isFocused = useIsFocused();
+
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const isFocused = useIsFocused();
+    const [totals, setTotals] = useState({
+        users: 0,
+        products: 0,
+        orders: 0,
+        stores: 0,
+        reviews: 0,
+        orderItems: 0,
+    });
 
-    const loadStats = async () => {
+    // [{ storeId, storeName, products }]
+    const [productsByStore, setProductsByStore] = useState([]);
+    const [maxProducts, setMaxProducts] = useState(0);
+
+    const loadStats = useCallback(async () => {
         try {
-            setLoading(true);
-            const data = await getDashboardStats();
-            setStats(data);
-        } catch (error) {
-            console.log('Error dashboard:', error?.response?.data || error);
+            if (!refreshing) setLoading(true);
+
+            // Pedimos TODO en paralelo:
+            // - Listas para cards
+            // - Dashboard stats para la gráfica
+            const [
+                users,
+                orders,
+                stores,
+                reviews,
+                products,
+                orderItems,
+                dashboardStats,
+            ] = await Promise.all([
+                getUsers(),
+                getOrders(),
+                getStores(),
+                getReviews(),
+                getProducts(),
+                getOrderItems(),
+                getDashboardStats(), // 👈 /dashboard/stats
+            ]);
+
+            // Totales por entidad (los dejamos tal cual)
+            const nextTotals = {
+                users: users.length,
+                orders: orders.length,
+                stores: stores.length,
+                reviews: reviews.length,
+                products: products.length,
+                orderItems: orderItems.length,
+            };
+            setTotals(nextTotals);
+
+            // ---------- GRÁFICA: usar /dashboard/stats ----------
+            const fromApi =
+                dashboardStats?.productsByStore ??
+                dashboardStats?.productsPerStore ??
+                [];
+
+            // Normalizamos a [{ storeId, storeName, products }]
+            const normalized = fromApi.map((item, index) => ({
+                storeId:
+                    item.storeId ??
+                    item.id ??
+                    item.storeName ??
+                    item.name ??
+                    index,
+                storeName: item.storeName || item.name || 'N/A',
+                products:
+                    item.productCount ??
+                    item.products ??
+                    0,
+            }));
+
+            // opcional: solo mostramos stores con al menos 1 producto
+            const nonEmpty = normalized.filter((s) => s.products > 0);
+
+            const max = nonEmpty.reduce(
+                (acc, cur) => (cur.products > acc ? cur.products : acc),
+                0
+            );
+
+            setProductsByStore(nonEmpty);
+            setMaxProducts(max);
+        } catch (err) {
+            console.error('Error cargando dashboard:', err);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
-    };
+    }, [refreshing]);
+
 
     useEffect(() => {
-        if (isFocused) loadStats();
-    }, [isFocused]);
+        if (isFocused) {
+            loadStats();
+        }
+    }, [isFocused, loadStats]);
 
-    const onRefresh = useCallback(async () => {
+    const onRefresh = useCallback(() => {
         setRefreshing(true);
-        await loadStats();
-        setRefreshing(false);
-    }, []);
+        loadStats();
+    }, [loadStats]);
 
     if (loading && !refreshing) {
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" />
-                <Text>Cargando estadísticas...</Text>
             </View>
         );
     }
 
-    const totalUsers = stats?.totalUsers ?? 0;
-    const totalProducts = stats?.totalProducts ?? 0;
-    const totalOrders = stats?.totalOrders ?? 0;
-    const totalReviews = stats?.totalReviews ?? 0;
-
-    const productsByStore = stats?.productsByStore ?? [];
-
-    // Para escalar las barras
-    const maxCount = productsByStore.reduce(
-        (max, s) => (s.productCount > max ? s.productCount : max),
-        0
-    ) || 1;
-
     return (
         <ScrollView
             style={styles.container}
-            contentContainerStyle={{ paddingBottom: 24 }}
             refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
         >
             <Text style={styles.title}>Dashboard</Text>
 
-            {/* Tarjetas de resumen */}
+            {/* Cards de resumen (mismo contenido que el front web) */}
             <View style={styles.cardsRow}>
                 <View style={styles.card}>
                     <Text style={styles.cardLabel}>Users</Text>
-                    <Text style={styles.cardValue}>{totalUsers}</Text>
+                    <Text style={styles.cardValue}>{totals.users}</Text>
                 </View>
-
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Products</Text>
-                    <Text style={styles.cardValue}>{totalProducts}</Text>
+                    <Text style={styles.cardLabel}>Orders</Text>
+                    <Text style={styles.cardValue}>{totals.orders}</Text>
                 </View>
             </View>
 
             <View style={styles.cardsRow}>
                 <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Orders</Text>
-                    <Text style={styles.cardValue}>{totalOrders}</Text>
+                    <Text style={styles.cardLabel}>Stores</Text>
+                    <Text style={styles.cardValue}>{totals.stores}</Text>
                 </View>
-
                 <View style={styles.card}>
                     <Text style={styles.cardLabel}>Reviews</Text>
-                    <Text style={styles.cardValue}>{totalReviews}</Text>
+                    <Text style={styles.cardValue}>{totals.reviews}</Text>
                 </View>
             </View>
 
-            {/* Gráfico de productos por tienda */}
-            <Text style={styles.sectionTitle}>Productos por tienda</Text>
-
-            {productsByStore.length === 0 ? (
-                <Text style={styles.emptyText}>
-                    No hay datos de productos por tienda.
-                </Text>
-            ) : (
-                <View style={styles.chartContainer}>
-                    {productsByStore.map((store) => {
-                        const widthPercent = (store.productCount / maxCount) * 100;
-                        return (
-                            <View key={store.storeId} style={styles.chartRow}>
-                                <Text style={styles.storeName} numberOfLines={1}>
-                                    {store.storeName}
-                                </Text>
-                                <View style={styles.barBackground}>
-                                    <View
-                                        style={[
-                                            styles.barFill,
-                                            { width: `${widthPercent}%` },
-                                        ]}
-                                    />
-                                </View>
-                                <Text style={styles.barValue}>{store.productCount}</Text>
-                            </View>
-                        );
-                    })}
+            <View style={styles.cardsRow}>
+                <View style={styles.card}>
+                    <Text style={styles.cardLabel}>Products</Text>
+                    <Text style={styles.cardValue}>{totals.products}</Text>
                 </View>
-            )}
+                <View style={styles.card}>
+                    <Text style={styles.cardLabel}>OrderItems</Text>
+                    <Text style={styles.cardValue}>{totals.orderItems}</Text>
+                </View>
+            </View>
+
+            {/* Gráfica: Products by Store */}
+            <Text style={styles.sectionTitle}>Productos por tienda</Text>
+            <View style={styles.chartContainer}>
+                {productsByStore.length === 0 ? (
+                    <Text style={styles.chartEmptyText}>
+                        No hay datos de productos por tienda.
+                    </Text>
+                ) : (
+                    <View style={styles.barsWrapper}>
+                        {productsByStore.map((item) => {
+                            const widthPercent =
+                                maxProducts > 0
+                                    ? (item.products / maxProducts) * 100
+                                    : 0;
+
+                            return (
+                                <View
+                                    key={item.storeId}
+                                    style={styles.barRow}
+                                >
+                                    <Text
+                                        style={styles.storeName}
+                                        numberOfLines={1}
+                                    >
+                                        {item.storeName}
+                                    </Text>
+
+                                    <View style={styles.barBackground}>
+                                        <View
+                                            style={[
+                                                styles.barFill,
+                                                { width: `${widthPercent}%` },
+                                            ]}
+                                        />
+                                    </View>
+
+                                    <Text style={styles.barValue}>
+                                        {item.products}
+                                    </Text>
+                                </View>
+                            );
+                        })}
+                    </View>
+                )}
+            </View>
         </ScrollView>
     );
 };
-
-export default DashboardScreen;
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
+        backgroundColor: '#f3f4f6',
     },
 
     center: {
@@ -160,43 +250,60 @@ const styles = StyleSheet.create({
 
     card: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
         paddingVertical: 12,
         paddingHorizontal: 10,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#ddd',
         marginHorizontal: 4,
+        // sombra ligera
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 2,
+        elevation: 2,
     },
 
     cardLabel: {
-        fontSize: 14,
-        color: '#555',
+        fontSize: 13,
+        color: '#6b7280',
+        marginBottom: 6,
     },
 
     cardValue: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginTop: 4,
+        color: '#111827',
     },
 
     sectionTitle: {
-        marginTop: 24,
         fontSize: 18,
         fontWeight: '600',
+        marginTop: 16,
         marginBottom: 8,
     },
 
-    emptyText: {
-        fontSize: 14,
-        color: '#777',
-    },
-
     chartContainer: {
-        marginTop: 4,
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 2,
+        elevation: 1,
     },
 
-    chartRow: {
+    chartEmptyText: {
+        textAlign: 'center',
+        color: '#6b7280',
+        fontSize: 14,
+    },
+
+    barsWrapper: {
+        marginTop: 8,
+    },
+
+    barRow: {
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 6,
@@ -229,3 +336,5 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 });
+
+export default DashboardScreen;

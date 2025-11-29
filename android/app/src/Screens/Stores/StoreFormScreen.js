@@ -1,5 +1,5 @@
 // android/app/src/Screens/Stores/StoreFormScreen.js
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import {
     View,
     Text,
@@ -11,46 +11,103 @@ import {
     ActivityIndicator,
 } from 'react-native';
 
-import {
-    createStore,
-    updateStore,
-} from '../../api/storesApi';
+import { Picker } from '@react-native-picker/picker';
+
+import { createStore, updateStore } from '../../api/storesApi';
+import { getUsers } from '../../api/usersApi';
 
 const StoreFormScreen = ({ navigation, route }) => {
     const item = route?.params?.item;
     const isEdit = !!item;
 
-    const [name, setName] = useState(item ? item.name : '');
-    const [location, setLocation] = useState(item ? item.location : '');
-    const [description, setDescription] = useState(item ? item.description : '');
+    // 🔹 Estado único basado en ProductFormScreen
+    const [form, setForm] = useState({
+        name: item?.name ?? '',
+        description: item?.description ?? '',
+        category: item?.category ?? '',
+        userId: item?.userId ? String(item.userId) : '',
+    });
 
+    const [users, setUsers] = useState([]);
+    const [loadingUsers, setLoadingUsers] = useState(true);
     const [loading, setLoading] = useState(false);
 
+    // Configurar título del header
     useLayoutEffect(() => {
         navigation.setOptions({
             title: isEdit ? 'Edit store' : 'Add store',
         });
     }, [navigation, isEdit]);
 
+    // Función para actualizar un campo
+    const updateField = (field, value) => {
+        setForm((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    // Cargar lista de usuarios
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setLoadingUsers(true);
+                const res = await getUsers();
+                const data = res.data?.data ?? res.data ?? res;
+
+                setUsers(Array.isArray(data) ? data : []);
+
+                // Asignar primer usuario si estamos creando
+                if (!isEdit && data && data.length > 0 && !form.userId) {
+                    setForm((prev) => ({
+                        ...prev,
+                        userId: String(data[0].id),
+                    }));
+                }
+            } catch (error) {
+                console.log('Error cargando usuarios:', error);
+                Alert.alert('Error', 'No se pudieron cargar los usuarios.');
+            } finally {
+                setLoadingUsers(false);
+            }
+        };
+
+        fetchUsers();
+    }, [isEdit]);
+
+    // Guardar tienda
     const handleSave = async () => {
-        if (!name || !location || !description) {
-            Alert.alert('Error', 'Todos los campos son obligatorios');
+        if (
+            !form.name.trim() ||
+            !form.description.trim() ||
+            !form.category.trim() ||
+            !form.userId.trim()
+        ) {
+            Alert.alert('Error', 'Todos los campos son obligatorios.');
             return;
         }
 
-        const payload = { name, location, description };
+        const payload = {
+            name: form.name.trim(),
+            description: form.description.trim(),
+            category: form.category.trim(),
+            userId: parseInt(form.userId, 10),
+        };
 
         try {
             setLoading(true);
 
-            if (isEdit) await updateStore(item.id, payload);
-            else await createStore(payload);
+            if (isEdit) {
+                await updateStore(item.id, payload);
+            } else {
+                await createStore(payload);
+            }
 
             setLoading(false);
             navigation.goBack();
         } catch (error) {
             setLoading(false);
-            console.log('Error guardando tienda:', error?.response?.data || error);
+            console.log('Error guardando tienda:', error);
             Alert.alert('Error', 'No se pudo guardar la tienda');
         }
     };
@@ -61,30 +118,57 @@ const StoreFormScreen = ({ navigation, route }) => {
                 {isEdit ? 'Editar tienda' : 'Crear tienda'}
             </Text>
 
-            <Text style={styles.label}>Nombre</Text>
+            {/* Nombre */}
+            <Text style={styles.label}>Store Name</Text>
             <TextInput
                 style={styles.input}
-                value={name}
-                onChangeText={setName}
+                value={form.name}
+                onChangeText={(text) => updateField('name', text)}
                 placeholder="Ej: Mi tienda"
             />
 
-            <Text style={styles.label}>Ubicación</Text>
+            {/* Descripción */}
+            <Text style={styles.label}>Store Description</Text>
             <TextInput
-                style={styles.input}
-                value={location}
-                onChangeText={setLocation}
-                placeholder="Ej: Santa Cruz"
+                style={[styles.input, { height: 80 }]}
+                value={form.description}
+                onChangeText={(text) => updateField('description', text)}
+                placeholder="Describe la tienda..."
+                multiline
             />
 
-            <Text style={styles.label}>Descripción</Text>
+            {/* Categoría */}
+            <Text style={styles.label}>Category</Text>
             <TextInput
-                style={[styles.input, { minHeight: 80 }]}
-                value={description}
-                onChangeText={setDescription}
-                multiline
-                placeholder="Describe la tienda..."
+                style={styles.input}
+                value={form.category}
+                onChangeText={(text) => updateField('category', text)}
+                placeholder="Ej: Alimentos, Tecnología..."
             />
+
+            {/* Usuario */}
+            <Text style={styles.label}>User</Text>
+
+            {loadingUsers ? (
+                <ActivityIndicator size="small" />
+            ) : (
+                <View style={styles.pickerWrapper}>
+                    <Picker
+                        selectedValue={form.userId}
+                        onValueChange={(value) => updateField('userId', String(value))}
+                    >
+                        <Picker.Item label="-- Select user --" value="" />
+
+                        {users.map((u) => (
+                            <Picker.Item
+                                key={u.id}
+                                label={`${u.firstName} ${u.lastName}`}
+                                value={String(u.id)}
+                            />
+                        ))}
+                    </Picker>
+                </View>
+            )}
 
             {loading ? (
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
@@ -105,21 +189,28 @@ const styles = StyleSheet.create({
         padding: 16,
         paddingBottom: 32,
     },
-
     title: {
         textAlign: 'center',
         fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 16,
     },
-
-    label: { marginTop: 8, marginBottom: 4 },
-
+    label: {
+        marginTop: 8,
+        marginBottom: 4,
+    },
     input: {
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 6,
         paddingHorizontal: 10,
         paddingVertical: 8,
+    },
+    pickerWrapper: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 6,
+        overflow: 'hidden',
+        marginBottom: 16,
     },
 });

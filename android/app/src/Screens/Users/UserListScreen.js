@@ -1,4 +1,3 @@
-// android/app/src/Screens/Users/UserListScreen.js
 import React, { useEffect, useState, useCallback } from 'react';
 import {
     View,
@@ -6,17 +5,14 @@ import {
     StyleSheet,
     FlatList,
     ActivityIndicator,
-    Button,
     TouchableOpacity,
     RefreshControl,
     Alert,
+    Button,
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 
-import {
-    getUsers,
-    deleteUser,
-} from '../../api/usersApi';
+import { getUsers, deleteUser } from '../../api/usersApi';
 
 const UserListScreen = ({ navigation }) => {
     const [users, setUsers] = useState([]);
@@ -28,10 +24,11 @@ const UserListScreen = ({ navigation }) => {
     const loadUsers = async () => {
         try {
             setLoading(true);
-            const data = await getUsers();
-            setUsers(data);
+            const response = await getUsers();
+            const data = response.data?.data ?? response.data ?? response;
+            setUsers(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.log('Error cargando users:', error?.response?.data || error);
+            console.log('Error cargando usuarios:', error);
             Alert.alert('Error', 'No se pudieron cargar los usuarios.');
         } finally {
             setLoading(false);
@@ -49,12 +46,12 @@ const UserListScreen = ({ navigation }) => {
     }, []);
 
     const goToCreate = () => navigation.navigate('UserForm');
-    const goToEdit = (item) => navigation.navigate('UserForm', { item });
+    const goToEdit = (user) => navigation.navigate('UserForm', { userId: user.id });
 
-    const handleDelete = (item) => {
+    const handleDelete = (user) => {
         Alert.alert(
-            'Eliminar usuario',
-            `¿Eliminar usuario "${item.name}"?`,
+            'Eliminar Usuario',
+            `¿Eliminar a "${user.firstName} ${user.lastName}"?`,
             [
                 { text: 'Cancelar', style: 'cancel' },
                 {
@@ -62,10 +59,10 @@ const UserListScreen = ({ navigation }) => {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            await deleteUser(item.id);
+                            await deleteUser(user.id);
                             await loadUsers();
                         } catch (err) {
-                            console.log('Error al eliminar:', err?.response?.data || err);
+                            console.log('Error al eliminar:', err);
                             Alert.alert('Error', 'No se pudo eliminar el usuario');
                         }
                     },
@@ -74,29 +71,44 @@ const UserListScreen = ({ navigation }) => {
         );
     };
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity onPress={() => goToEdit(item)}>
-            <View style={styles.card}>
-                <View style={styles.cardHeader}>
-                    <Text style={styles.name}>{item.name}</Text>
-                    <Text style={styles.email}>{item.email}</Text>
+    const renderItem = ({ item }) => {
+        const fullName =
+            `${item.firstName ?? ''} ${item.lastName ?? ''}`.trim() || 'Sin nombre';
+
+        return (
+            <TouchableOpacity onPress={() => goToEdit(item)}>
+                <View style={styles.card}>
+                    {/* HEADER DE LA CARD */}
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.userName}>{fullName}</Text>
+                        <Text style={styles.email}>{item.email}</Text>
+                    </View>
+
+                    <Text style={styles.line}>
+                        Teléfono:{' '}
+                        <Text style={styles.bold}>{item.phone ?? 'N/A'}</Text>
+                    </Text>
+
+                    <Text style={styles.line}>
+                        Rol:{' '}
+                        <Text style={styles.bold}>{item.role ?? 'N/A'}</Text>
+                    </Text>
+
+                    {/* BOTONES */}
+                    <View style={styles.rowActions}>
+                        <TouchableOpacity style={[styles.btn, styles.btnEdit]}>
+                            <Text style={styles.btnText}>EDIT</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={[styles.btn, styles.btnDelete]}>
+                            <Text style={styles.btnText}>DELETE</Text>
+                        </TouchableOpacity>
+                    </View>
+
                 </View>
-
-                <Text style={styles.line}>
-                    Teléfono: <Text style={styles.bold}>{item.phone || 'N/A'}</Text>
-                </Text>
-
-                <Text style={styles.date}>
-                    Creado el: {new Date(item.createdAt).toLocaleString()}
-                </Text>
-
-                <View style={styles.rowActions}>
-                    <Button title="Edit" onPress={() => goToEdit(item)} />
-                    <Button title="Delete" color="red" onPress={() => handleDelete(item)} />
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     if (loading) {
         return (
@@ -109,10 +121,11 @@ const UserListScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
+
+            {/* 🔥 HEADER AL ESTILO REVIEWS */}
             <View style={styles.headerRow}>
                 <Text style={styles.title}>Users</Text>
-                <Button title="Add user" onPress={goToCreate} />
+                <Button title="Add User" onPress={goToCreate} />
             </View>
 
             <FlatList
@@ -148,6 +161,7 @@ const styles = StyleSheet.create({
 
     title: { fontSize: 22, fontWeight: 'bold' },
 
+    /* CARD */
     card: {
         backgroundColor: '#fff',
         padding: 14,
@@ -162,21 +176,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
 
-    name: { fontSize: 16, fontWeight: '600' },
-    email: { fontSize: 12, color: '#0284c7', fontWeight: '600' },
+    userName: { fontSize: 16, fontWeight: '600' },
+    email: { fontSize: 13, color: '#2563eb' },
 
-    line: {
-        marginTop: 6,
-        fontSize: 14,
-    },
-
+    line: { marginTop: 6, fontSize: 13 },
     bold: { fontWeight: 'bold' },
-
-    date: {
-        marginTop: 6,
-        fontSize: 12,
-        color: '#777',
-    },
 
     rowActions: {
         flexDirection: 'row',
@@ -189,4 +193,30 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    rowActions: {
+        flexDirection: 'row',
+        marginTop: 12,
+    },
+
+    btn: {
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+
+    btnEdit: {
+        backgroundColor: '#1d4ed8',
+    },
+
+    btnDelete: {
+        backgroundColor: '#dc2626',
+    },
+
+    btnText: {
+        color: 'white',
+        fontWeight: '700',
+    },
+
 });

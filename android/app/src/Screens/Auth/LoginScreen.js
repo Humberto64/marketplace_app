@@ -44,10 +44,7 @@ const LoginScreen = ({ navigation }) => {
             setLoading(false);
 
             // Ir al dashboard y resetear la navegación
-            navigation.reset({
-                index: 0,
-                routes: [{ name: 'Dashboard' }],
-            });
+            navigation.navigate('Dashboard');
         } catch (error) {
             setLoading(false);
             console.log('Login error:', error?.response?.data || error.message);

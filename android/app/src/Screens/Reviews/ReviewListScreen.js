@@ -74,29 +74,48 @@ const ReviewListScreen = ({ navigation }) => {
         );
     };
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity onPress={() => goToEdit(item)}>
-            <View style={styles.card}>
-                <View style={styles.cardHeader}>
-                    <Text style={styles.userName}>{item.userName}</Text>
-                    <Text style={styles.rating}>⭐ {item.rating}/5</Text>
+    const renderItem = ({ item }) => {
+        const numericRating = Number(item.rating);
+        const safeRating = Number.isNaN(numericRating) ? 0 : numericRating;
+
+        return (
+            <TouchableOpacity onPress={() => goToEdit(item)}>
+                <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.reviewId}>Review #{item.id}</Text>
+                        <Text style={styles.userName}>{item.userName}</Text>
+                        <Text style={styles.rating}>⭐ {safeRating}/5</Text>
+                    </View>
+
+                    <Text style={styles.comment} numberOfLines={2}>
+                        {item.comment}
+                    </Text>
+
+                    <Text style={styles.productName}>
+                        Producto:<Text style={styles.bold}>{item.productName}</Text>
+                    </Text>
+
+                    <View style={styles.rowActions}>
+                        <TouchableOpacity
+                            style={[styles.btn, styles.btnEdit]}
+                            onPress={() => goToEdit(item)}
+                        >
+                            <Text style={styles.btnText}>EDIT</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.btn, styles.btnDelete]}
+                            onPress={() => handleDelete(item)}
+                        >
+                            <Text style={styles.btnText}>DELETE</Text>
+                        </TouchableOpacity>
+                    </View>
+
                 </View>
+            </TouchableOpacity>
+        );
+    };
 
-                <Text style={styles.comment} numberOfLines={2}>
-                    {item.comment}
-                </Text>
-
-                <Text style={styles.productName}>
-                    Producto: <Text style={styles.bold}>{item.productName}</Text>
-                </Text>
-
-                <View style={styles.rowActions}>
-                    <Button title="Edit" onPress={() => goToEdit(item)} />
-                    <Button title="Delete" color="red" onPress={() => handleDelete(item)} />
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
 
     if (loading) {
         return (
@@ -189,4 +208,30 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    rowActions: {
+        flexDirection: 'row',
+        marginTop: 12,
+    },
+
+    btn: {
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+
+    btnEdit: {
+        backgroundColor: '#1d4ed8',
+    },
+
+    btnDelete: {
+        backgroundColor: '#dc2626',
+    },
+
+    btnText: {
+        color: 'white',
+        fontWeight: '700',
+    },
+
 });

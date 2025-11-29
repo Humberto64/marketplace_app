@@ -1,5 +1,5 @@
 // android/app/src/Screens/Orders/OrderFormScreen.js
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import {
     View,
     Text,
@@ -11,19 +11,34 @@ import {
     ActivityIndicator,
 } from 'react-native';
 
-import {
-    createOrder,
-    updateOrder,
-} from '../../api/ordersApi';
+import { Picker } from '@react-native-picker/picker';
+import { createOrder, updateOrder } from '../../api/ordersApi';
+import { getUsers } from '../../api/usersApi';
+
+const currencyOptions = [
+    { label: "Bolivianos", value: "Bs" },
+    { label: "Dólares Estadounidenses", value: "USD" },
+    { label: "Euros", value: "Eur" },
+];
+
+const paymentMethodOptions = ["CASH", "CREDIT_CARD", "DEBIT_CARD", "TRANSFER", "QR"];
+const paymentStatusOptions = ["PENDING", "COMPLETED", "FAILED"];
 
 const OrderFormScreen = ({ navigation, route }) => {
     const item = route?.params?.item;
     const isEdit = !!item;
 
-    const [status, setStatus] = useState(item ? item.status : '');
-    const [total, setTotal] = useState(item ? String(item.total) : '');
-    const [userId, setUserId] = useState(item ? String(item.userId) : '');
+    // 🔹 ÚNICO ESTADO DEL FORMULARIO
+    const [form, setForm] = useState({
+        currency: item?.currency ?? "",
+        paymentMethod: item?.paymentMethod ?? "",
+        paymentStatus: item?.paymentStatus ?? "",
+        total: item ? String(item.total) : "",
+        userId: item?.userId ? String(item.userId) : "",
+    });
 
+    const [users, setUsers] = useState([]);
+    const [loadingUsers, setLoadingUsers] = useState(true);
     const [loading, setLoading] = useState(false);
 
     useLayoutEffect(() => {
@@ -32,20 +47,54 @@ const OrderFormScreen = ({ navigation, route }) => {
         });
     }, [navigation, isEdit]);
 
+    const updateField = (field, value) => {
+        setForm((prev) => ({ ...prev, [field]: value }));
+    };
+
+    // 🔹 Cargar usuarios para el dropdown
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setLoadingUsers(true);
+                const data = await getUsers(); // devuelve [{id, firstname, lastname, email}]
+                setUsers(data || []);
+
+                if (!isEdit && data.length > 0 && !form.userId) {
+                    updateField("userId", String(data[0].id));
+                }
+            } catch (error) {
+                console.log("Error cargando usuarios:", error);
+                Alert.alert("Error", "No se pudieron cargar los usuarios");
+            } finally {
+                setLoadingUsers(false);
+            }
+        };
+
+        fetchUsers();
+    }, [isEdit]);
+
     const handleSave = async () => {
-        if (!status || !total || !userId) {
-            Alert.alert('Error', 'Todos los campos son obligatorios');
+        if (
+            !form.currency.trim() ||
+            !form.paymentMethod.trim() ||
+            !form.paymentStatus.trim() ||
+            !form.total.trim() ||
+            !form.userId.trim()
+        ) {
+            Alert.alert("Error", "Todos los campos son obligatorios");
             return;
         }
 
         const payload = {
-            status,
-            total: parseFloat(total),
-            userId: parseInt(userId, 10),
+            currency: form.currency,
+            paymentMethod: form.paymentMethod,
+            paymentStatus: form.paymentStatus,
+            total: parseFloat(form.total),
+            userId: parseInt(form.userId, 10),
         };
 
-        if (Number.isNaN(payload.total) || Number.isNaN(payload.userId)) {
-            Alert.alert('Error', 'Valores numéricos inválidos');
+        if (Number.isNaN(payload.total)) {
+            Alert.alert("Error", "El total debe ser un número válido");
             return;
         }
 
@@ -62,48 +111,98 @@ const OrderFormScreen = ({ navigation, route }) => {
             navigation.goBack();
         } catch (error) {
             setLoading(false);
-            console.log('Error guardando orden:', error?.response?.data || error);
-            Alert.alert('Error', 'No se pudo guardar la orden');
+            console.log("Error guardando orden:", error?.response?.data || error);
+            Alert.alert("Error", "No se pudo guardar la orden");
         }
     };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>
-                {isEdit ? 'Editar orden' : 'Crear orden'}
-            </Text>
+            <Text style={styles.title}>{isEdit ? "Editar orden" : "Crear orden"}</Text>
 
-            <Text style={styles.label}>Status</Text>
-            <TextInput
-                style={styles.input}
-                value={status}
-                onChangeText={setStatus}
-                placeholder="Ej: PENDING"
-            />
+            {/* 🔹 Currency */}
+            <Text style={styles.label}>Currency</Text>
+            <View style={styles.pickerWrapper}>
+                <Picker
+                    selectedValue={form.currency}
+                    onValueChange={(value) => updateField("currency", value)}
+                >
+                    <Picker.Item label="--Select Currency--" value="" />
+                    {currencyOptions.map((c) => (
+                        <Picker.Item key={c.value} label={c.label} value={c.value} />
+                    ))}
+                </Picker>
+            </View>
 
+            {/* 🔹 Payment Method */}
+            <Text style={styles.label}>Payment Method</Text>
+            <View style={styles.pickerWrapper}>
+                <Picker
+                    selectedValue={form.paymentMethod}
+                    onValueChange={(value) => updateField("paymentMethod", value)}
+                >
+                    <Picker.Item label="--Payment Method--" value="" />
+                    {paymentMethodOptions.map((pm) => (
+                        <Picker.Item key={pm} label={pm} value={pm} />
+                    ))}
+                </Picker>
+            </View>
+
+            {/* 🔹 Payment Status */}
+            <Text style={styles.label}>Payment Status</Text>
+            <View style={styles.pickerWrapper}>
+                <Picker
+                    selectedValue={form.paymentStatus}
+                    onValueChange={(value) => updateField("paymentStatus", value)}
+                >
+                    <Picker.Item label="--Payment Status--" value="" />
+                    {paymentStatusOptions.map((ps) => (
+                        <Picker.Item key={ps} label={ps} value={ps} />
+                    ))}
+                </Picker>
+            </View>
+
+            {/* 🔹 Total */}
             <Text style={styles.label}>Total</Text>
             <TextInput
                 style={styles.input}
-                value={total}
-                onChangeText={setTotal}
+                value={form.total}
                 keyboardType="numeric"
                 placeholder="Ej: 99.99"
+                onChangeText={(text) =>
+                    updateField("total", text.replace(/[^0-9.]/g, ""))
+                }
             />
 
-            <Text style={styles.label}>User ID</Text>
-            <TextInput
-                style={styles.input}
-                value={userId}
-                onChangeText={setUserId}
-                keyboardType="numeric"
-                placeholder="ID del usuario"
-            />
+            {/* 🔹 User */}
+            <Text style={styles.label}>Usuario</Text>
+            {loadingUsers ? (
+                <ActivityIndicator size="small" />
+            ) : (
+                <View style={styles.pickerWrapper}>
+                    <Picker
+                        selectedValue={form.userId}
+                        onValueChange={(value) =>
+                            updateField("userId", String(value))
+                        }
+                    >
+                        <Picker.Item label="--Select User--" value="" />
+                        {users.map((u) => (
+                            <Picker.Item
+                                key={u.id}
+                                label={`${u.firstName} ${u.lastName}`.trim()}
+                                value={String(u.id)}
+                            />
+                        ))}
+                    </Picker>
+                </View>
+            )}
 
             {loading ? (
                 <ActivityIndicator size="large" style={{ marginTop: 16 }} />
             ) : (
                 <Button
-                    title={isEdit ? 'Guardar cambios' : 'Crear orden'}
+                    title={isEdit ? "Guardar cambios" : "Crear orden"}
                     onPress={handleSave}
                 />
             )}
@@ -118,21 +217,29 @@ const styles = StyleSheet.create({
         padding: 16,
         paddingBottom: 32,
     },
-
     title: {
-        textAlign: 'center',
+        textAlign: "center",
         fontSize: 22,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 16,
     },
-
-    label: { marginTop: 8, marginBottom: 4 },
-
+    label: {
+        marginTop: 8,
+        marginBottom: 4,
+    },
     input: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: "#ccc",
         borderRadius: 6,
         paddingHorizontal: 10,
         paddingVertical: 8,
+        marginBottom: 8,
+    },
+    pickerWrapper: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 6,
+        overflow: "hidden",
+        marginBottom: 8,
     },
 });
