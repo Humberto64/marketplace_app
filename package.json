@@ -1,5 +1,4 @@
 {
-  "name": "Marketplace_application",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -12,8 +11,6 @@
   "dependencies": {
     "react": "19.1.1",
     "react-native": "0.82.1",
-    "@react-native/new-app-screen": "0.82.1",
-    "react-native-safe-area-context": "^5.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
