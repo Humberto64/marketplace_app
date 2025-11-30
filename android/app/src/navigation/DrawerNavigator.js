@@ -1,18 +1,18 @@
 // android/app/src/navigation/DrawerNavigator.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
-    Button,
     View,
     Text,
     TouchableOpacity,
+    ActivityIndicator,
 } from 'react-native';
-import { Menu } from 'lucide-react-native';
 import {
     createDrawerNavigator,
     DrawerContentScrollView,
-    DrawerItemList
+    DrawerItemList,
 } from '@react-navigation/drawer';
 import {
+    Menu,
     Home,
     ShoppingBag,
     Store,
@@ -20,11 +20,12 @@ import {
     MessageCircle,
     ClipboardList,
     Grid2X2,
-    Settings as SettingsIcon,
+    LogOut,
 } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // Screens
 import DashboardScreen from '../Screens/Dashboard/DashboardScreen';
-import SettingsScreen from '../Screens/Settings/SettingsScreen';
 import OrderItemsNavigator from './OrderItemsNavigator';
 import OrdersNavigator from './OrdersNavigator';
 import ProductsNavigator from './ProductsNavigator';
@@ -33,6 +34,54 @@ import StoresNavigator from './StoresNavigator';
 import UsersNavigator from './UsersNavigator';
 
 const Drawer = createDrawerNavigator();
+
+/**
+ * 🔹 Screen de Logout dentro del MISMO archivo.
+ *    Cuando se monta:
+ *    - Borra tokens
+ *    - Hace reset al RootStack hacia "Auth" (AuthNavigator → Login)
+ */
+const LogoutScreen = ({ navigation }) => {
+    useEffect(() => {
+        const doLogout = async () => {
+            try {
+                await AsyncStorage.multiRemove([
+                    'token',
+                    'refreshToken',
+                    'authuserId',
+                    'email',
+                    'firstname',
+                    'lastname',
+                    'role',
+                ]);
+
+                // 👇 Desde el Drawer, getParent() es el RootStack (AppNavigator)
+                navigation.getParent()?.reset({
+                    index: 0,
+                    routes: [{ name: 'Auth' }], // ⬅️ este es el name de tu RootStack.Screen de AuthNavigator
+                });
+            } catch (e) {
+                console.log('Error en logout:', e);
+            }
+        };
+
+        doLogout();
+    }, [navigation]);
+
+    // Pantalla de carga rápida mientras se hace logout
+    return (
+        <View
+            style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#ffffff',
+            }}
+        >
+            <ActivityIndicator size="large" color="#1d4ed8" />
+        </View>
+    );
+};
 
 const DrawerNavigator = () => {
     return (
@@ -45,6 +94,7 @@ const DrawerNavigator = () => {
                         backgroundColor: '#1d4ed8',
                     }}
                 >
+                    {/* Título Marketplace */}
                     <View style={{ padding: 20, paddingBottom: 10 }}>
                         <Text
                             style={{
@@ -57,20 +107,21 @@ const DrawerNavigator = () => {
                         </Text>
                     </View>
 
+                    {/* Items del Drawer (Dashboard, Products, Stores, etc. + Logout) */}
                     <DrawerItemList {...props} />
                 </DrawerContentScrollView>
             )}
             screenOptions={({ navigation }) => ({
-                // 🔹 HEADER AZUL COMO EL DRAWER
+                // Header azul como el drawer
                 headerStyle: {
-                    backgroundColor: "#1d4ed8",
+                    backgroundColor: '#1d4ed8',
                 },
-                headerTintColor: "#ffffff", // color del título y back button
+                headerTintColor: '#ffffff',
                 headerTitleStyle: {
-                    color: "#ffffff",
+                    color: '#ffffff',
                     fontWeight: '600',
                 },
-                // 🔹 Botón hamburguesa blanco
+                // Botón hamburguesa blanco
                 headerRight: () => (
                     <TouchableOpacity
                         onPress={() => navigation.openDrawer()}
@@ -166,16 +217,22 @@ const DrawerNavigator = () => {
                 }}
             />
 
+            {/* 🔚 Item de Logout como Drawer.Screen, sin crear archivos nuevos */}
             <Drawer.Screen
-                name="Settings"
-                component={SettingsScreen}
+                name="Logout"
+                component={LogoutScreen}
                 options={{
+                    title: 'Log out',
                     drawerIcon: ({ color, size }) => (
-                        <SettingsIcon color={color} size={size} />
+                        <LogOut color={color} size={size} />
                     ),
+                    drawerItemStyle: {
+                        marginTop: 'auto', // Empuja este item al fondo del menú
+                    },
                 }}
             />
         </Drawer.Navigator>
     );
 };
+
 export default DrawerNavigator;

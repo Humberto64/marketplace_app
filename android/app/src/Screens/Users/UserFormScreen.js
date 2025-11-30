@@ -53,13 +53,16 @@ const UserFormScreen = ({ navigation, route }) => {
             return;
         }
 
-        const phoneNumber =
-            user.phone && user.phone.trim() !== ''
-                ? Number(user.phone)
-                : null;
+        const rawPhone = user.phone ? user.phone.trim() : '';
 
-        if (user.phone && Number.isNaN(phoneNumber)) {
-            Alert.alert('Error', 'El teléfono debe ser numérico');
+        // 👇 Validación de teléfono: obligatorio, 8 dígitos numéricos
+        if (!rawPhone) {
+            Alert.alert('Error', 'El teléfono es obligatorio');
+            return;
+        }
+
+        if (!/^\d{8}$/.test(rawPhone)) {
+            Alert.alert('Error', 'El teléfono debe tener exactamente 8 dígitos numéricos');
             return;
         }
 
@@ -68,9 +71,8 @@ const UserFormScreen = ({ navigation, route }) => {
             lastName: user.lastName,
             email: user.email,
             address: user.address,
-            phone: phoneNumber,
+            phone: rawPhone, // 👈 ahora como STRING, no Number
             role: user.role,
-            // password: user.password, // si tu backend lo necesita
         };
 
         try {
@@ -87,10 +89,16 @@ const UserFormScreen = ({ navigation, route }) => {
         } catch (error) {
             setLoading(false);
             console.log('Error guardando usuario:', error?.response?.data || error);
-            Alert.alert('Error', 'No se pudo guardar el usuario');
+
+            // Si quieres mostrar el mensaje exacto del backend:
+            const msg =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                'No se pudo guardar el usuario';
+
+            Alert.alert('Error', msg);
         }
     };
-
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.topRow}>

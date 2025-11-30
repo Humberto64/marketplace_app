@@ -108,9 +108,6 @@ const OrderListScreen = ({ navigation }) => {
                     Total Amount: <Text style={styles.bold}>{item.totalAmount}</Text>
                 </Text>
                 <Text style={styles.line}>
-                    UserId: <Text style={styles.bold}>{item.userId}</Text>
-                </Text>
-                <Text style={styles.line}>
                     Method: <Text style={styles.bold}>{item.payMethod}</Text>
                 </Text>
                 <Text style={styles.line}>

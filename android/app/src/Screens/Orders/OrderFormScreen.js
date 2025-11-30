@@ -15,7 +15,6 @@ import { ArrowLeft } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 import { createOrder, updateOrder } from '../../api/ordersApi';
 import { getUsers } from '../../api/usersApi';
-
 const currencyOptions = [
     { label: "Bolivianos", value: "Bs" },
     { label: "Dólares Estadounidenses", value: "USD" },
@@ -30,8 +29,6 @@ const paymentStatusOptions = [
     { label: "Completed", value: "Completed" },
     { label: "Pending", value: "Pending" },
 ];
-
-
 const OrderFormScreen = ({ navigation, route }) => {
     const item = route?.params?.item;
     const isEdit = !!item;
