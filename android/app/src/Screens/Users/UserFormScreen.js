@@ -117,6 +117,7 @@ const UserFormScreen = ({ navigation, route }) => {
                         value={user.firstName}
                         onChangeText={(value) => handleChange('firstName', value)}
                         placeholder="First Name"
+                        placeholderTextColor="#000000"
                     />
                 </View>
 
@@ -127,6 +128,7 @@ const UserFormScreen = ({ navigation, route }) => {
                         value={user.lastName}
                         onChangeText={(value) => handleChange('lastName', value)}
                         placeholder="Last Name"
+                        placeholderTextColor="#000000"
                     />
                 </View>
             </View>
@@ -137,6 +139,7 @@ const UserFormScreen = ({ navigation, route }) => {
                 value={user.email}
                 onChangeText={(value) => handleChange('email', value)}
                 placeholder="Email Address"
+                placeholderTextColor="#000000"
                 keyboardType="email-address"
                 autoCapitalize="none"
             />
@@ -149,6 +152,7 @@ const UserFormScreen = ({ navigation, route }) => {
                         value={user.address}
                         onChangeText={(value) => handleChange('address', value)}
                         placeholder="Address"
+                        placeholderTextColor="#000000"
                     />
                 </View>
 
@@ -159,6 +163,7 @@ const UserFormScreen = ({ navigation, route }) => {
                         value={user.phone}
                         onChangeText={(value) => handleChange('phone', value)}
                         placeholder="Phone"
+                        placeholderTextColor="#000000"
                         keyboardType="numeric"
                     />
                 </View>
@@ -224,7 +229,8 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         paddingHorizontal: 10,
         paddingVertical: 8,
-        backgroundColor: 'white',
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
     row: {
         flexDirection: 'row',
@@ -241,6 +247,8 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         backgroundColor: 'white',
         marginBottom: 12,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
     picker: {
         height: 45,

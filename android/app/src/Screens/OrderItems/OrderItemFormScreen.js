@@ -271,6 +271,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 8,
         marginBottom: 8,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
     pickerWrapper: {
         borderWidth: 1,
@@ -278,5 +280,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         overflow: "hidden",
         marginBottom: 8,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
 });

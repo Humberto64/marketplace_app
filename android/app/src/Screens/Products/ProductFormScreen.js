@@ -147,6 +147,7 @@ const ProductFormScreen = ({ navigation, route }) => {
                 value={form.name}
                 onChangeText={(text) => updateField('name', text)}
                 placeholder="Ej: Laptop"
+                placeholderTextColor="#000000"
             />
 
             {/* Descripción */}
@@ -156,6 +157,7 @@ const ProductFormScreen = ({ navigation, route }) => {
                 value={form.description}
                 onChangeText={(text) => updateField('description', text)}
                 placeholder="Describe el producto"
+                placeholderTextColor="#000000"
                 multiline
             />
 
@@ -166,6 +168,7 @@ const ProductFormScreen = ({ navigation, route }) => {
                 value={form.price}
                 keyboardType="numeric"
                 placeholder="Ej: 999.99"
+                placeholderTextColor="#000000"
                 onChangeText={(text) =>
                     // solo números y punto
                     updateField('price', text.replace(/[^0-9.]/g, ''))
@@ -179,6 +182,7 @@ const ProductFormScreen = ({ navigation, route }) => {
                 value={form.stock}
                 keyboardType="numeric"
                 placeholder="Ej: 20"
+                placeholderTextColor="#000000"
                 onChangeText={(text) =>
                     // solo dígitos
                     updateField('stock', text.replace(/[^0-9]/g, ''))
@@ -254,6 +258,8 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         paddingHorizontal: 10,
         paddingVertical: 8,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
     switchRow: {
         flexDirection: 'row',
@@ -267,5 +273,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         overflow: 'hidden',
         marginBottom: 16,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
 });

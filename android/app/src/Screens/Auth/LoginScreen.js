@@ -64,6 +64,7 @@ const LoginScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Ingresa tu email"
+                placeholderTextColor="#000000"
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -74,6 +75,7 @@ const LoginScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Ingresa tu contraseña"
+                placeholderTextColor="#000000"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry

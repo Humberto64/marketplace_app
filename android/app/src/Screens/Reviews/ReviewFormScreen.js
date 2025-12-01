@@ -156,6 +156,7 @@ const ReviewFormScreen = ({ navigation, route }) => {
                 value={form.rating}
                 keyboardType="numeric"
                 placeholder="Ej: 5"
+                placeholderTextColor="#000000"
                 onChangeText={(text) => {
                     // Solo dígitos
                     const onlyDigits = text.replace(/[^0-9]/g, '');
@@ -183,6 +184,7 @@ const ReviewFormScreen = ({ navigation, route }) => {
                 onChangeText={(text) => updateField('comment', text)}
                 multiline
                 placeholder="Tu comentario..."
+                placeholderTextColor="#000000"
             />
 
             {/* Usuario */}
@@ -279,6 +281,8 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         paddingHorizontal: 10,
         paddingVertical: 8,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
     pickerWrapper: {
         borderWidth: 1,
@@ -286,5 +290,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         overflow: 'hidden',
         marginBottom: 8,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
 });

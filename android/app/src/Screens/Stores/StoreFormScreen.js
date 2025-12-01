@@ -126,6 +126,7 @@ const StoreFormScreen = ({ navigation, route }) => {
                 value={form.name}
                 onChangeText={(text) => updateField('name', text)}
                 placeholder="Ej: Mi tienda"
+                placeholderTextColor="#000000"
             />
 
             {/* Descripción */}
@@ -135,6 +136,7 @@ const StoreFormScreen = ({ navigation, route }) => {
                 value={form.description}
                 onChangeText={(text) => updateField('description', text)}
                 placeholder="Describe la tienda..."
+                placeholderTextColor="#000000"
                 multiline
             />
 
@@ -145,6 +147,7 @@ const StoreFormScreen = ({ navigation, route }) => {
                 value={form.category}
                 onChangeText={(text) => updateField('category', text)}
                 placeholder="Ej: Alimentos, Tecnología..."
+                placeholderTextColor="#000000"
             />
 
             {/* Usuario */}
@@ -207,6 +210,8 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         paddingHorizontal: 10,
         paddingVertical: 8,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
     pickerWrapper: {
         borderWidth: 1,
@@ -214,5 +219,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         overflow: 'hidden',
         marginBottom: 16,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
 });

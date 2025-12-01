@@ -26,7 +26,7 @@ const paymentMethodOptions = [
     { label: "Paypal", value: "Paypal" },
 ];
 const paymentStatusOptions = [
-    { label: "Completed", value: "Completed" },
+    { label: "Completed", value: "Complete" },
     { label: "Pending", value: "Pending" },
 ];
 const OrderFormScreen = ({ navigation, route }) => {
@@ -35,10 +35,13 @@ const OrderFormScreen = ({ navigation, route }) => {
 
     // 🔹 ÚNICO ESTADO DEL FORMULARIO
     const [form, setForm] = useState({
+        subtotal: 0,
+        totalAmount: 0,
+        tax: 0,
         currency: item?.currency ?? "",
-        paymentMethod: item?.paymentMethod ?? "",
+        payMethod: item?.payMethod ?? "",
         paymentStatus: item?.paymentStatus ?? "",
-        total: item ? String(item.total) : "",
+        orderDate: item?.orderDate ?? "",
         userId: item?.userId ? String(item.userId) : "",
     });
 
@@ -81,9 +84,8 @@ const OrderFormScreen = ({ navigation, route }) => {
     const handleSave = async () => {
         if (
             !form.currency.trim() ||
-            !form.paymentMethod.trim() ||
+            !form.payMethod.trim() ||
             !form.paymentStatus.trim() ||
-            !form.total.trim() ||
             !form.userId.trim()
         ) {
             Alert.alert("Error", "Todos los campos son obligatorios");
@@ -91,18 +93,14 @@ const OrderFormScreen = ({ navigation, route }) => {
         }
 
         const payload = {
+            subtotal: form.subtotal?? 0,
+            totalAmount: form.totalAmount?? 0,
+            tax: form.tax?? 0,
             currency: form.currency,
-            paymentMethod: form.paymentMethod,
-            paymentStatus: form.paymentStatus,
-            total: parseFloat(form.total),
+            payMethod: form.payMethod ||"",
+            paymentStatus: form.paymentStatus || "",
             userId: parseInt(form.userId, 10),
         };
-
-        if (Number.isNaN(payload.total)) {
-            Alert.alert("Error", "El total debe ser un número válido");
-            return;
-        }
-
         try {
             setLoading(true);
 
@@ -148,8 +146,8 @@ const OrderFormScreen = ({ navigation, route }) => {
             <Text style={styles.label}>Payment Method</Text>
             <View style={styles.pickerWrapper}>
                 <Picker
-                    selectedValue={form.paymentMethod}
-                    onValueChange={(value) => updateField("paymentMethod", value)}
+                    selectedValue={form.payMethod}
+                    onValueChange={(value) => updateField("payMethod", value)}
                 >
                     <Picker.Item label="--Payment Method--" value="" />
                     {paymentMethodOptions.map((c) => (
@@ -171,19 +169,6 @@ const OrderFormScreen = ({ navigation, route }) => {
                     ))}
                 </Picker>
             </View>
-
-            {/* 🔹 Total */}
-            <Text style={styles.label}>Total</Text>
-            <TextInput
-                style={styles.input}
-                value={form.total}
-                keyboardType="numeric"
-                placeholder="Ej: 99.99"
-                onChangeText={(text) =>
-                    updateField("total", text.replace(/[^0-9.]/g, ""))
-                }
-            />
-
             {/* 🔹 User */}
             <Text style={styles.label}>Usuario</Text>
             {loadingUsers ? (
@@ -245,6 +230,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 8,
         marginBottom: 8,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
     pickerWrapper: {
         borderWidth: 1,
@@ -252,5 +239,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         overflow: "hidden",
         marginBottom: 8,
+        backgroundColor: 'white',  // fondo fijo
+        color: 'black',
     },
 });

@@ -92,6 +92,7 @@ const RegisterScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Tu nombre"
+                placeholderTextColor="#000000"
                 value={form.firstName}
                 onChangeText={text => updateField('firstName', text)}
             />
@@ -100,6 +101,7 @@ const RegisterScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Tu apellido"
+                placeholderTextColor="#000000"
                 value={form.lastName}
                 onChangeText={text => updateField('lastName', text)}
             />
@@ -108,6 +110,7 @@ const RegisterScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Ingresa tu email"
+                placeholderTextColor="#000000"
                 value={form.email}
                 onChangeText={text => updateField('email', text)}
                 autoCapitalize="none"
@@ -118,6 +121,7 @@ const RegisterScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Ingresa tu contraseña"
+                placeholderTextColor="#000000"
                 value={form.password}
                 onChangeText={text => updateField('password', text)}
                 secureTextEntry
@@ -127,6 +131,7 @@ const RegisterScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Repite la contraseña"
+                placeholderTextColor="#000000"
                 value={form.confirm}
                 onChangeText={text => updateField('confirm', text)}
                 secureTextEntry
